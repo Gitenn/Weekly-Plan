@@ -1,11 +1,10 @@
 # Rose & Ribbon Planner
 
-Rose & Ribbon is a personal weekly planner designed to make keeping track of daily life and studies feel inviting. It combines a soft, botanical wallpaper with readable day cards, appointments, and a daily focus. The visual goal is intentional: a design that feels beautiful and personal can make returning to a planner more motivating.
+Rose & Ribbon is a personal weekly planner designed to make keeping track of daily life and studies feel inviting. It combines a soft, botanical wallpaper with readable day cards, appointments, and a daily focus. The visual goal is intentional: a design that feels beautiful and personal can make returning to a planner more motivating. The practical goal is to get some experience with vibe coding on a topic that I find relevant. 
 
 ## What it does
 
-- Shows five weekday cards (Monday to Friday); weekends are not displayed.
-- Existing weekend appointments remain in the local schedule, but are hidden from the planner.
+- Shows five weekday cards (Monday to Friday); weekends are not displayed. 
 - Displays appointments and a daily focus on each day card, without card-level scrollbars.
 - Lets you add, edit, and delete appointments and save a daily focus from the flower-shaped edit control or by selecting a day card.
 - Saves the schedule and displayed week locally in `planner-data.json`. This personal file is deliberately excluded from Git.
@@ -14,7 +13,7 @@ Rose & Ribbon is a personal weekly planner designed to make keeping track of dai
 - Uses botanical illustrations and slow, out-of-sync animations for a living-wallpaper feel.
 - Fits the desktop planner to the screen without a page scrollbar, while leaving space near the screen edges for desktop shortcuts.
 
-The project currently uses local data and a local server; it does not yet connect to Google Calendar, Microsoft Outlook, or another external calendar.
+The project currently uses local data and a local server; it does not yet connect to Google Calendar, Microsoft Outlook, or another external calendar. The images used are public domain original artworks. 
 
 ## How to use it
 
@@ -29,14 +28,14 @@ The server listens on `http://127.0.0.1:41731/`. It is intended for this compute
 ### Plan your week
 
 - Select a day card to open that day's planner.
-- Use the flower-shaped button in the lower-right corner to open the editor.
+- Use the incognito flower-shaped button in the lower-right corner to open the editor. 
 - Add, edit, or delete appointments; set the daily focus and save it.
 - Use the arrows to change weeks and **This week** to return to the current week.
 - The displayed week is shared with Lively, so the wallpaper follows the planner's selected week.
 
 ### Use Lively
 
-Choose **Rose & Ribbon Planner** from the Lively wallpaper library if it is not already active. The local server initializes the installed wallpaper and updates active temporary Lively copies. If Lively has cached an older appearance after a visual update, reselect the wallpaper in Lively.
+Choose **Rose & Ribbon Planner** from the Lively wallpaper library or your own pc library, if it is not already active. The local server initializes the installed wallpaper and updates active temporary Lively copies. If Lively has cached an older appearance after a visual update, reselect the wallpaper in Lively.
 
 ## Project layout
 
@@ -62,7 +61,6 @@ The root page contains an empty, non-personal starter snapshot for a clean publi
 - `planner-data.json`, temporary schedule files, server logs, and local reference images are excluded by `.gitignore`.
 - The committed `index.html` snapshot is intentionally empty. The local server leaves it that way while it updates the private Lively copy.
 - Before publishing, review the staged changes with `git status` and `git diff --cached`. Do not force-add personal data or local reference material.
-- If personal information has already been pushed to a public remote, deleting it in a later commit is not enough: remove it from Git history, rotate any exposed credentials, and consider the data public.
 
 ## Vibe-coding process and design goal
 
@@ -72,6 +70,8 @@ The central design question was whether a visually pleasing, expressive planner 
 
 ## Possible future features
 
+- Toggle on and off weekend days while maintaining a sleek layout
+- Make other designs and a menu for choosing among them
 - Optional Google Calendar integration, with a clear choice of read-only import or two-way synchronization.
 - Optional Microsoft Outlook or Microsoft 365 calendar integration.
 - Calendar selection, conflict handling, and controls for which external events appear on the wallpaper.
