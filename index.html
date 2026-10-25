@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f1e7df" />
+    <title>Rose &amp; Ribbon — Weekly Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-frame" aria-hidden="true">
+      <div class="botanical botanical--left">
+        <img src="assets/botanical/image-from-rawpixel-id-16823162-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--right">
+        <img src="assets/botanical/image-from-rawpixel-id-16733280-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--bottom">
+        <img src="assets/botanical/image-from-rawpixel-id-16733444-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--rose">
+        <img src="assets/botanical/image-from-rawpixel-id-16745039-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--orchid">
+        <img src="assets/botanical/image-from-rawpixel-id-16816034-png(1).png" alt="" />
+      </div>
+      <div class="botanical botanical--bell">
+        <img src="assets/botanical/image-from-rawpixel-id-16822442-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--berry">
+        <img src="assets/botanical/image-from-rawpixel-id-16823136-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--pansy">
+        <img src="assets/botanical/image-from-rawpixel-id-16823337-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--corner botanical--corner-top-left">
+        <img src="assets/botanical/image-from-rawpixel-id-16745039-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--corner botanical--corner-top-right">
+        <img src="assets/botanical/image-from-rawpixel-id-16823136-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--corner botanical--corner-bottom-left">
+        <img src="assets/botanical/image-from-rawpixel-id-16822442-png.png" alt="" />
+      </div>
+      <div class="botanical botanical--corner botanical--corner-bottom-right">
+        <img src="assets/botanical/image-from-rawpixel-id-16745039-png.png" alt="" />
+      </div>
+    </div>
+
+    <main class="planner-shell">
+      <header class="masthead">
+        <p class="eyebrow">A little order, a lot of lovely</p>
+        <h1>Your weekly plan</h1>
+        <div class="rule" aria-hidden="true">
+          <img src="assets/botanical/image-from-rawpixel-id-16823136-png.png" alt="" />
+        </div>
+      </header>
+
+      <nav class="toolbar" aria-label="Weekly planner controls">
+        <button type="button" class="nav-button" id="previous-week" aria-label="Previous week">‹</button>
+        <div id="week-label" class="week-label" aria-live="polite"></div>
+        <button type="button" class="nav-button" id="next-week" aria-label="Next week">›</button>
+        <button type="button" class="today-button" id="this-week">This week</button>
+      </nav>
+
+      <section id="week-grid" class="week-grid" aria-label="Weekly planner"></section>
+
+      <footer class="footer">
+        <p class="footer-quote">Elegance is mandatory, stress is optional.</p>
+      </footer>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </main>
+
+    <button type="button" id="open-editor" class="edit-flower" aria-label="Edit plans" title="Edit plans">
+      <img src="assets/botanical/image-from-rawpixel-id-16745039-png.png" alt="" />
+    </button>
+
+    <div id="scrim" class="scrim" aria-hidden="true" hidden></div>
+
+    <aside id="editor" class="editor" aria-labelledby="editor-title" hidden>
+      <div class="editor-header">
+        <div>
+          <p class="eyebrow eyebrow--small">Your private concierge</p>
+          <h2 id="editor-title">Plan the day</h2>
+          <p id="selected-date" class="selected-date"></p>
+        </div>
+        <button type="button" id="close-editor" class="close-button" aria-label="Close planner editor">×</button>
+      </div>
+
+      <label class="weekend-toggle" for="show-weekends">
+        <input id="show-weekends" type="checkbox" />
+        <span>
+          <strong>Show Saturday &amp; Sunday</strong>
+          <small>Weekend cards also appear automatically when they contain plans.</small>
+        </span>
+      </label>
+
+      <section>
+        <h3 class="section-title">Appointments</h3>
+        <div id="event-list" class="event-list"></div>
+      </section>
+
+      <section>
+        <h3 id="event-form-heading" class="section-title">Add an appointment</h3>
+        <form id="event-form">
+          <div class="form-grid">
+            <div class="field field--full">
+              <label for="event-title">What is happening?</label>
+              <input id="event-title" name="title" maxlength="64" required placeholder="A lovely little plan" />
+            </div>
+            <div class="field">
+              <label for="event-time">Time</label>
+              <input id="event-time" name="time" type="time" />
+            </div>
+            <div class="field">
+              <label for="event-category">Occasion</label>
+              <select id="event-category" name="category">
+                <option value="Appointment">Appointment</option>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Wellbeing">Wellbeing</option>
+                <option value="Celebration">Celebration</option>
+              </select>
+            </div>
+            <div class="field field--full">
+              <label for="event-note">Details (optional)</label>
+              <textarea id="event-note" name="note" maxlength="160" placeholder="A place, a reminder, or a little note…"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="primary-button" id="save-event">Add appointment</button>
+            <button type="button" class="ghost-button" id="cancel-edit" hidden>Cancel edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <h3 class="section-title">Daily plan</h3>
+        <form id="plans-form">
+          <div class="field field--full">
+            <label for="focus-plan">Focus for the day</label>
+            <input id="focus-plan" name="focus" maxlength="80" placeholder="One thing to make room for" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="primary-button">Save day plan</button>
+          </div>
+        </form>
+      </section>
+    </aside>
+
+    <script>
+      window.ROSE_RIBBON_DATA = {"events":[],"plans":{},"showWeekends":false,"displayWeek":null}; // ROSE_RIBBON_DATA
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>

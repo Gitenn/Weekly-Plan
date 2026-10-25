@@ -1,0 +1,8 @@
+# Personal planner data and generated local diagnostics
+/planner-data.json
+/planner-data.json.tmp
+/logs/
+*.log
+
+# Reference images are local design material, not project assets
+/assets/reference/
