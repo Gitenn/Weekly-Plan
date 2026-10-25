@@ -151,6 +151,8 @@ h1 {
 }
 
 .day-card {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   padding: 14px 12px 12px;
   border: 1px solid var(--line);
@@ -188,12 +190,16 @@ h1 {
 .day-body {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   gap: 8px;
-  height: calc(100% - 60px);
+  height: auto;
+  overflow-y: auto;
 }
 
 .event-item {
   display: grid;
+  flex-shrink: 0;
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 8px;
   align-items: start;
@@ -218,6 +224,10 @@ h1 {
   overflow-wrap: anywhere;
 }
 
+.event-item > span:last-child {
+  min-width: 0;
+}
+
 .event-item small {
   display: block;
   margin-top: 4px;
@@ -227,6 +237,7 @@ h1 {
 }
 
 .event-placeholder {
+  flex-shrink: 0;
   padding: 10px;
   text-align: center;
   border: 1px dashed rgba(95,66,58,0.2);
@@ -235,11 +246,16 @@ h1 {
 }
 
 .focus-box {
+  flex-shrink: 0;
   margin-top: auto;
   padding: 10px 8px;
   border-top: 1px solid var(--line);
   background: rgba(246, 235, 225, 0.8);
   border-radius: 10px;
+}
+
+.focus-box > div {
+  overflow-wrap: anywhere;
 }
 
 .focus-label {
@@ -928,9 +944,12 @@ h1 {
   }
 
   .planner-shell .day-body {
-    height: calc(100% - 64px);
+    flex: 1;
+    min-height: 0;
+    height: auto;
     gap: 12px;
     line-height: 1.32;
+    overflow-y: auto;
   }
 
   .planner-shell .day-name,
