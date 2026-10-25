@@ -146,10 +146,6 @@ h1 {
   gap: clamp(14px, 1.35vw, 24px);
 }
 
-.week-grid.show-weekends {
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-}
-
 .day-card {
   display: flex;
   flex-direction: column;
@@ -194,7 +190,7 @@ h1 {
   min-height: 0;
   gap: 8px;
   height: auto;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .event-item {
@@ -224,6 +220,15 @@ h1 {
   overflow-wrap: anywhere;
 }
 
+.day-body .event-item strong,
+.focus-box > div {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .event-item > span:last-child {
   min-width: 0;
 }
@@ -245,6 +250,14 @@ h1 {
   color: var(--muted);
 }
 
+.event-more {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: italic;
+  text-align: center;
+}
+
 .focus-box {
   flex-shrink: 0;
   margin-top: auto;
@@ -252,10 +265,6 @@ h1 {
   border-top: 1px solid var(--line);
   background: rgba(246, 235, 225, 0.8);
   border-radius: 10px;
-}
-
-.focus-box > div {
-  overflow-wrap: anywhere;
 }
 
 .focus-label {
@@ -375,31 +384,6 @@ textarea {
   flex-wrap: wrap;
 }
 
-.weekend-toggle {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  margin-top: 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.3);
-}
-
-.weekend-toggle input {
-  margin-top: 2px;
-}
-
-.weekend-toggle strong {
-  display: block;
-}
-
-.weekend-toggle small {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-}
-
 .event-list {
   display: grid;
   gap: 10px;
@@ -413,13 +397,13 @@ textarea {
 
 @media (max-width: 900px) {
   .planner-shell { width: min(92vw, 720px); }
-  .week-grid, .week-grid.show-weekends {
+  .week-grid {
     grid-template-columns: repeat(2, minmax(150px, 1fr));
   }
 }
 
 @media (max-width: 650px) {
-  .week-grid, .week-grid.show-weekends {
+  .week-grid {
     grid-template-columns: 1fr;
   }
   .form-grid { grid-template-columns: 1fr; }
@@ -504,27 +488,6 @@ textarea {
   line-height: 1;
 }
 
-.weekend-toggle {
-  display: flex;
-  align-items: start;
-  gap: 12px;
-  padding: 14px 10px;
-  border-radius: 16px;
-  background: rgba(245, 234, 229, 0.82);
-  margin: 16px 0 10px;
-  border: 1px solid rgba(127, 90, 100, 0.12);
-}
-
-.weekend-toggle input {
-  margin-top: 4px;
-  accent-color: var(--rose-deep);
-}
-
-.weekend-toggle span {
-  display: grid;
-  gap: 4px;
-}
-
 .section-title {
   margin: 20px 0 0;
   font-size: 0.92rem;
@@ -594,10 +557,6 @@ textarea {
     grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
 
-  .week-grid.show-weekends {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
-  }
-
   .botanical--left,
   .botanical--right,
   .botanical--rose,
@@ -616,8 +575,7 @@ textarea {
     margin-top: 18px;
   }
 
-  .week-grid,
-  .week-grid.show-weekends {
+  .week-grid {
     grid-template-columns: 1fr;
   }
 
@@ -651,12 +609,6 @@ textarea {
   }
 }
 
-@media (min-width: 901px) and (max-width: 1200px) {
-  .week-grid.show-weekends {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
 @keyframes sway {
   0% { transform: rotate(-2deg) translateY(0px); }
   100% { transform: rotate(2deg) translateY(10px); }
@@ -674,12 +626,6 @@ h1 {
   letter-spacing: 0;
   line-height: 1.2;
   text-transform: none;
-}
-
-.planner-shell--weekends {
-  width: min(90vw, 1680px);
-  margin-left: max(8vw, calc((100vw - 1680px) / 2));
-  margin-right: auto;
 }
 
 .day-card {
@@ -798,12 +744,6 @@ h1 {
 }
 
 @media (max-width: 900px) {
-  .planner-shell--weekends {
-    width: min(92vw, 720px);
-    margin-right: auto;
-    margin-left: auto;
-  }
-
   .edit-flower {
     right: 12px;
     bottom: 12px;
@@ -915,17 +855,12 @@ h1 {
     background: rgba(255, 250, 245, 0.94);
   }
 
-  .planner-shell .week-grid,
-  .planner-shell .week-grid.show-weekends {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+  .planner-shell .week-grid {
+    width: 100%;
+    margin-inline: 0;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     align-items: center;
     gap: clamp(6px, 0.6vw, 12px);
-  }
-
-  .planner-shell:not(.planner-shell--weekends) .week-grid {
-    width: 71.5%;
-    margin-inline: auto;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .planner-shell .day-card {
@@ -947,9 +882,9 @@ h1 {
     flex: 1;
     min-height: 0;
     height: auto;
-    gap: 12px;
+    gap: 6px;
     line-height: 1.32;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .planner-shell .day-name,

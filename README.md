@@ -4,10 +4,11 @@ Rose & Ribbon is a personal weekly planner designed to make keeping track of dai
 
 ## What it does
 
-- Shows one Monday-to-Friday week, with Saturday and Sunday available when enabled or when they contain plans.
-- Displays appointments and a daily focus on each day card.
+- Shows five weekday cards (Monday to Friday); weekends are not displayed.
+- Existing weekend appointments remain in the local schedule, but are hidden from the planner.
+- Displays appointments and a daily focus on each day card, without card-level scrollbars.
 - Lets you add, edit, and delete appointments and save a daily focus from the flower-shaped edit control or by selecting a day card.
-- Saves the schedule, displayed week, and weekend preference locally in `planner-data.json`. This personal file is deliberately excluded from Git.
+- Saves the schedule and displayed week locally in `planner-data.json`. This personal file is deliberately excluded from Git.
 - Shares the same saved schedule and selected week between the browser planner and the Lively desktop wallpaper.
 - Refreshes active Lively wallpaper copies when the local planner server saves data or starts.
 - Uses botanical illustrations and slow, out-of-sync animations for a living-wallpaper feel.
@@ -30,7 +31,6 @@ The server listens on `http://127.0.0.1:41731/`. It is intended for this compute
 - Select a day card to open that day's planner.
 - Use the flower-shaped button in the lower-right corner to open the editor.
 - Add, edit, or delete appointments; set the daily focus and save it.
-- Toggle **Show Saturday & Sunday** in the editor when you want weekend cards to appear even if they are empty.
 - Use the arrows to change weeks and **This week** to return to the current week.
 - The displayed week is shared with Lively, so the wallpaper follows the planner's selected week.
 

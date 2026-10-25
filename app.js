@@ -11,7 +11,7 @@ const state = {
   schedule: {
     events: Array.isArray(savedSchedule.events) ? savedSchedule.events : [],
     plans: savedSchedule.plans && typeof savedSchedule.plans === 'object' ? savedSchedule.plans : {},
-    showWeekends: savedSchedule.showWeekends === true,
+    showWeekends: false,
     displayWeek: parseWeekStart(savedSchedule.displayWeek) ? savedSchedule.displayWeek : null
   },
   currentWeekStart: parseWeekStart(savedSchedule.displayWeek) || mondayOf(new Date()),
@@ -22,7 +22,6 @@ const state = {
 const scheduleUrl = 'http://127.0.0.1:41731/api/schedule';
 
 const weekGrid = document.getElementById('week-grid');
-const plannerShell = document.querySelector('.planner-shell');
 const weekLabel = document.getElementById('week-label');
 const statusNode = document.getElementById('status');
 const editor = document.getElementById('editor');
@@ -36,7 +35,6 @@ const eventTime = document.getElementById('event-time');
 const eventCategory = document.getElementById('event-category');
 const eventNote = document.getElementById('event-note');
 const focusPlan = document.getElementById('focus-plan');
-const showWeekendsInput = document.getElementById('show-weekends');
 const saveEventButton = document.getElementById('save-event');
 const cancelEditButton = document.getElementById('cancel-edit');
 const eventFormHeading = document.getElementById('event-form-heading');
@@ -83,20 +81,8 @@ function sortedEvents(dateKey) {
 
 function weekDates() {
   const monday = state.currentWeekStart;
-  const showWeekends = state.schedule.showWeekends === true || [5, 6].some(offset => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + offset);
-    const key = keyFor(d);
-    const dayEvents = (state.schedule.events || []).some(e => e.date === key);
-    const dayPlan = (state.schedule.plans || {})[key];
-    return dayEvents || Boolean(dayPlan && dayPlan.focus);
-  });
-
-  weekGrid.classList.toggle('show-weekends', showWeekends);
-  plannerShell.classList.toggle('planner-shell--weekends', showWeekends);
-  const length = showWeekends ? 7 : 5;
   const days = [];
-  for (let i = 0; i < length; i += 1) {
+  for (let i = 0; i < 5; i += 1) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
     days.push(d);
@@ -115,16 +101,18 @@ function renderWeek() {
     const events = sortedEvents(key);
     const plan = (state.schedule.plans || {})[key] || {};
 
+    const visibleEvents = events.slice(0, 2);
     const items = events.length
-      ? events.map(event => `
+      ? visibleEvents.map(event => `
           <div class="event-item">
             <span class="event-time">${escapeHtml(event.time || '—')}</span>
             <span>
               <strong>${escapeHtml(event.title)}</strong>
-              ${event.note ? `<small>${escapeHtml(event.note)}</small>` : ''}
             </span>
           </div>
-        `).join('')
+        `).join('') + (events.length > visibleEvents.length
+          ? `<div class="event-more">+ ${events.length - visibleEvents.length} more in your day</div>`
+          : '')
       : '<div class="event-placeholder">A little breathing room</div>';
 
     return `
@@ -165,7 +153,7 @@ function refreshSchedule() {
       state.schedule = {
         events: Array.isArray(data.events) ? data.events : [],
         plans: data.plans && typeof data.plans === 'object' ? data.plans : {},
-        showWeekends: Boolean(data.showWeekends),
+        showWeekends: false,
         displayWeek: parseWeekStart(data.displayWeek) ? data.displayWeek : null
       };
       state.currentWeekStart = parseWeekStart(data.displayWeek) || state.currentWeekStart;
@@ -206,8 +194,6 @@ function syncEditor() {
   const key = keyFor(state.selectedDate);
   const items = sortedEvents(key);
   const plans = (state.schedule.plans || {})[key] || {};
-  showWeekendsInput.checked = state.schedule.showWeekends === true;
-
   eventList.innerHTML = items.length
     ? items.map(item => `
       <div class="event-item">
@@ -324,13 +310,6 @@ function handlePlanSubmit(event) {
     .catch(err => renderStatus(err.message || 'Plan save failed'));
 }
 
-function handleWeekendToggle() {
-  state.schedule.showWeekends = showWeekendsInput.checked;
-  saveSchedule()
-    .then(() => refreshSchedule())
-    .catch(err => renderStatus(err.message || 'Weekend save failed'));
-}
-
 function setDisplayedWeek(weekStart) {
   state.currentWeekStart = mondayOf(weekStart);
   state.schedule.displayWeek = keyFor(state.currentWeekStart);
@@ -368,8 +347,6 @@ cancelEditButton.addEventListener('click', () => {
 
 eventForm.addEventListener('submit', handleEventSubmit);
 plansForm.addEventListener('submit', handlePlanSubmit);
-showWeekendsInput.addEventListener('change', handleWeekendToggle);
-
 state.selectedDate = new Date();
 renderWeek();
 refreshSchedule();
