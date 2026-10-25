@@ -1,4 +1,4 @@
-# Rose & Ribbon Planner
+# Rose & Ribbon Weekly Planner
 
 Rose & Ribbon is a personal weekly planner designed to make keeping track of daily life and studies feel inviting. It combines a soft, botanical wallpaper with readable day cards, appointments, and a daily focus. The visual goal is intentional: a design that feels beautiful and personal can make returning to a planner more motivating. The practical goal is to get some experience with vibe coding on a topic that I find relevant. 
 
