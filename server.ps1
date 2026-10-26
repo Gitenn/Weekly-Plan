@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 $port = 41731
 $baseUrl = "http://127.0.0.1:$port/"
 $dataPath = Join-Path $PSScriptRoot "planner-data.json"
@@ -113,7 +113,7 @@ function Read-Schedule {
         return New-EmptySchedule
     }
 
-    $saved = Get-Content -LiteralPath $dataPath -Raw | ConvertFrom-Json
+    $saved = [System.IO.File]::ReadAllText($dataPath, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
     if ($null -eq $saved.events -or $null -eq $saved.plans) {
         throw "Saved schedule data is malformed."
     }
@@ -302,10 +302,32 @@ function Sync-LivelyTemporaryCopies {
     }
 }
 
-function Initialize-LivelyWallpaper {
-    if (-not (Test-Path -LiteralPath $livelyWallpaperFolder -PathType Container)) {
-        throw "Lively wallpaper folder not found: $livelyWallpaperFolder"
+function Get-LivelyWallpaperFolder {
+    if (-not (Test-Path -LiteralPath (Join-Path $livelyRoot "wallpapers") -PathType Container)) {
+        return $null
     }
+    foreach ($candidate in (Get-ChildItem -LiteralPath (Join-Path $livelyRoot "wallpapers") -Directory -ErrorAction SilentlyContinue)) {
+        $indexPath = Join-Path $candidate.FullName "index.html"
+        if (-not (Test-Path -LiteralPath $indexPath -PathType Leaf)) {
+            continue
+        }
+        $content = [System.IO.File]::ReadAllText($indexPath, [System.Text.Encoding]::UTF8)
+        if ($content -match 'window\.ROSE_RIBBON_DATA') {
+            return $candidate.FullName
+        }
+    }
+    return $null
+}
+
+
+function Initialize-LivelyWallpaper {
+    $discovered = Get-LivelyWallpaperFolder
+    if ($null -eq $discovered) {
+        Add-Content -LiteralPath $logPath -Value "$(Get-Date -Format o) Lively wallpaper folder not found; skipping wallpaper initialization."
+        return
+    }
+    $script:livelyWallpaperFolder = $discovered
+    $script:livelyWallpaperPath = Join-Path $discovered "index.html"
 
     foreach ($fileName in @("styles.css", "app.js")) {
         $sourcePath = Join-Path $PSScriptRoot $fileName
@@ -365,8 +387,35 @@ function Write-Schedule {
         displayWeek = Normalize-DisplayWeek $Schedule.displayWeek
     }
     Write-ScheduleFile $persisted
-    Write-WallpaperSnapshot $persisted
-    Sync-LivelyTemporaryCopies $persisted
+
+    try {
+        $folder = Get-LivelyWallpaperFolder
+        if ($null -ne $folder) {
+            $script:livelyWallpaperFolder = $folder
+            $script:livelyWallpaperPath = Join-Path $folder "index.html"
+            Write-WallpaperSnapshot $persisted
+        }
+        # Sync every active Lively temp copy, not just the one for the running process.
+        $tempRoot = Join-Path $livelySaveDataRoot "wptmp"
+        if (Test-Path -LiteralPath $tempRoot -PathType Container) {
+            foreach ($tempFolder in (Get-ChildItem -LiteralPath $tempRoot -Directory -ErrorAction SilentlyContinue)) {
+                $tempIndex = Join-Path $tempFolder.FullName "index.html"
+                if (Test-Path -LiteralPath $tempIndex -PathType Leaf) {
+                    $tempContent = [System.IO.File]::ReadAllText($tempIndex, [System.Text.Encoding]::UTF8)
+                    if ($tempContent -match 'window\.ROSE_RIBBON_DATA') {
+                        $updated = Set-ScheduleSnapshot $tempContent $persisted
+                        [System.IO.File]::WriteAllText($tempIndex, $updated, [System.Text.UTF8Encoding]::new($false))
+                        foreach ($fileName in @("styles.css", "app.js")) {
+                            Copy-Item -LiteralPath (Join-Path $PSScriptRoot $fileName) -Destination (Join-Path $tempFolder.FullName $fileName) -Force -ErrorAction SilentlyContinue
+                        }
+                    }
+                }
+            }
+        }
+        Sync-LivelyTemporaryCopies $persisted
+    } catch {
+        Add-Content -LiteralPath $logPath -Value "$(Get-Date -Format o) Wallpaper sync failed: $($_.Exception.Message)"
+    }
     return [ordered]@{ saved = $true; revision = $persisted.revision }
 }
 
@@ -376,7 +425,7 @@ function Handle-Request {
     $request = $Context.Request
     $response = $Context.Response
     $path = $request.Url.AbsolutePath
-    $response.Headers["Access-Control-Allow-Origin"] = "null"
+    $response.Headers["Access-Control-Allow-Origin"] = "*"
     $response.Headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     $response.Headers["Access-Control-Allow-Headers"] = "Content-Type"
 
@@ -401,12 +450,17 @@ function Handle-Request {
             Write-JsonResponse $response 413 @{ error = "Schedule data is too large." }
             return
         }
-        $reader = [System.IO.StreamReader]::new($request.InputStream, $request.ContentEncoding)
+        $encoding = $request.ContentEncoding
+    if ($null -eq $encoding -or $encoding.WebName -ne 'utf-8') {
+        $encoding = [System.Text.Encoding]::UTF8
+    }
+    $reader = [System.IO.StreamReader]::new($request.InputStream, $encoding)
         try {
             $body = $reader.ReadToEnd()
         } finally {
             $reader.Dispose()
         }
+
         $schedule = ConvertFrom-Json -InputObject $body
         $result = Write-Schedule $schedule
         if (-not $result.saved) {

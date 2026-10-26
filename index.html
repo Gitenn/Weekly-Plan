@@ -93,70 +93,92 @@
         <button type="button" id="close-editor" class="close-button" aria-label="Close planner editor">×</button>
       </div>
 
-      <div class="editor-content">
-        <section>
-          <h3 class="section-title">Appointments</h3>
-          <div id="event-list" class="event-list"></div>
+            <div class="editor-content">
+        <div class="editor-tabs" role="tablist" aria-label="Planner mode">
+          <button type="button" role="tab" id="tab-default" class="editor-tab" aria-selected="false" aria-controls="panel-default" tabindex="-1">Default plan</button>
+          <button type="button" role="tab" id="tab-specific" class="editor-tab" aria-selected="true" aria-controls="panel-specific" tabindex="0">Specific days</button>
+        </div>
+
+        <section id="panel-default" role="tabpanel" aria-labelledby="tab-default" hidden>
+          <div class="weekday-chips" role="group" aria-label="Weekday">
+            <button type="button" class="chip" data-weekday="monday" aria-pressed="false">M</button>
+            <button type="button" class="chip" data-weekday="tuesday" aria-pressed="false">T</button>
+            <button type="button" class="chip" data-weekday="wednesday" aria-pressed="false">W</button>
+            <button type="button" class="chip" data-weekday="thursday" aria-pressed="false">T</button>
+            <button type="button" class="chip" data-weekday="friday" aria-pressed="false">F</button>
+          </div>
+          <div id="default-event-list" class="event-list"></div>
+          <button type="button" id="copy-default-all" class="btn btn--secondary btn--small">Copy to all weekdays</button>
         </section>
 
-        <section>
-          <h3 id="event-form-heading" class="section-title">Add an appointment</h3>
-          <form id="event-form" novalidate>
-            <div class="form-grid">
+        <section id="panel-specific" role="tabpanel" aria-labelledby="tab-specific">
+          <div class="day-mode">
+            <span class="day-mode-label">Use the default plan for this day</span>
+            <button type="button" role="switch" id="use-default-switch" class="switch" aria-checked="true" aria-label="Use the default plan for this day"></button>
+          </div>
+          <p id="day-mode-message" class="field-hint" hidden></p>
+          <div id="default-preview" class="event-list" hidden></div>
+          <div id="specific-event-list" class="event-list"></div>
+          <button type="button" id="start-from-default" class="btn btn--secondary btn--small" hidden>Start from the default</button>
+
+          <section>
+            <h3 class="section-title">Focus for the day</h3>
+            <form id="plans-form">
               <div class="field field--full">
-                
-                <input id="event-title" name="title" maxlength="40" required placeholder="Short and sweet to fit the card" aria-describedby="event-title-hint" />
-                <div class="field-meta">
-                  <span id="event-title-count" class="field-count" aria-live="polite">0/40</span>
+                <input id="focus-plan" name="focus" maxlength="80" placeholder="One thing to make room for" />
+              </div>
+              <div class="form-actions">
+                <button type="button" id="save-day-plan" class="btn btn--primary">Save day plan</button>
+              </div>
+            </form>
+          </section>
+        </section>
+<section>
+            <h3 id="event-form-heading" class="section-title">Add an appointment</h3>
+            <form id="event-form" novalidate>
+              <div class="form-grid">
+                <div class="field field--full">
+                  <input id="event-title" name="title" maxlength="40" required placeholder="Short and sweet to fit the card" aria-describedby="event-title-hint" />
+                  <div class="field-meta">
+                    <span id="event-title-count" class="field-count" aria-live="polite">0/40</span>
+                  </div>
+                  <p id="event-title-error" class="field-error" role="alert" hidden></p>
                 </div>
-                <p id="event-title-error" class="field-error" role="alert" hidden></p>
+                <div class="field field--full" id="event-date-field">
+                  <label for="event-date">Date</label>
+                  <input id="event-date" name="date" type="date" required aria-describedby="event-date-error" />
+                  <p id="event-date-error" class="field-error" role="alert" hidden></p>
+                </div>
+                <div class="field">
+                  <label for="event-time">Start time</label>
+                  <input id="event-time" name="time" type="time" aria-describedby="event-time-error" />
+                  <p id="event-time-error" class="field-error" role="alert" hidden></p>
+                  <button type="button" id="toggle-end-time" class="text-link" aria-expanded="false" aria-controls="end-time-field">Add end time</button>
+                </div>
+                <div class="field" id="end-time-field" hidden>
+                  <label for="event-end-time">End time (optional)</label>
+                  <input id="event-end-time" name="endTime" type="time" aria-describedby="event-end-time-error" />
+                  <p id="event-end-time-error" class="field-error" role="alert" hidden></p>
+                </div>
+                <div class="field field--full">
+                  <select id="event-category" name="category">
+                    <option value="Appointment">Appointment</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Wellbeing">Wellbeing</option>
+                    <option value="Celebration">Celebration</option>
+                  </select>
+                </div>
+                <div class="field field--full">
+                  <label for="event-note">Details (optional)</label>
+                  <textarea id="event-note" name="note" maxlength="160" placeholder="A place, a reminder, or a little note…"></textarea>
+                </div>
               </div>
-              <div class="field field--full">
-                <label for="event-date">Date</label>
-                <input id="event-date" name="date" type="date" required aria-describedby="event-date-error" />
-                <p id="event-date-error" class="field-error" role="alert" hidden></p>
-              </div>
-              <div class="field">
-                <label for="event-time">Start time</label>
-                <input id="event-time" name="time" type="time" aria-describedby="event-time-error" />
-                <p id="event-time-error" class="field-error" role="alert" hidden></p>
-                <button type="button" id="toggle-end-time" class="text-link" aria-expanded="false" aria-controls="end-time-field">Add end time</button>
-              </div>
-              <div class="field" id="end-time-field" hidden>
-                <label for="event-end-time">End time (optional)</label>
-                <input id="event-end-time" name="endTime" type="time" aria-describedby="event-end-time-error" />
-                <p id="event-end-time-error" class="field-error" role="alert" hidden></p>
-              </div>
-              <div class="field field--full">
-                <select id="event-category" name="category">
-                  <option value="Appointment">Appointment</option>
-                  <option value="Work">Work</option>
-                  <option value="Personal">Personal</option>
-                  <option value="Wellbeing">Wellbeing</option>
-                  <option value="Celebration">Celebration</option>
-                </select>
-              </div>
-              <div class="field field--full">
-                <label for="event-note">Details (optional)</label>
-                <textarea id="event-note" name="note" maxlength="160" placeholder="A place, a reminder, or a little note…"></textarea>
-              </div>
-            </div>
-            <button type="button" id="cancel-edit" class="btn btn--secondary" hidden>Cancel edit</button>
-          </form>
-        </section>
+              <button type="button" id="cancel-edit" class="btn btn--secondary" hidden>Cancel edit</button>
+            </form>
+          </section>
 
-        <section>
-          <h3 class="section-title">Focus for the day</h3>
-          <form id="plans-form">
-            <div class="field field--full">
-              <input id="focus-plan" name="focus" maxlength="80" placeholder="One thing to make room for" />
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="btn btn--primary">Save day plan</button>
-            </div>
-          </form>
-        </section>
-      </div>
+                </div>
 
       <div class="editor-footer">
         <button type="button" id="cancel-editor" class="btn btn--secondary">Cancel</button>
@@ -175,3 +197,5 @@
     <script src="app.js"></script>
   </body>
 </html>
+
+

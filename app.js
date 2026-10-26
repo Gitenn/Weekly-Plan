@@ -1,4 +1,11 @@
-const savedSchedule = window.ROSE_RIBBON_DATA || {};
+﻿const savedSchedule = window.ROSE_RIBBON_DATA || {};
+function emptyDefaultPlans() {
+  return { monday: [], tuesday: [], wednesday: [], thursday: [], friday: [] };
+}
+
+function weekdayKeyForDate(date) {
+  return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][date.getDay()];
+}
 
 function parseWeekStart(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
@@ -9,18 +16,27 @@ function parseWeekStart(value) {
 
 const state = {
   schedule: {
+    version: Number.isInteger(savedSchedule.version) ? savedSchedule.version : 2,
+    revision: Number.isInteger(savedSchedule.revision) ? savedSchedule.revision : 0,
     events: Array.isArray(savedSchedule.events) ? savedSchedule.events : [],
     plans: savedSchedule.plans && typeof savedSchedule.plans === 'object' ? savedSchedule.plans : {},
+    defaultPlans: savedSchedule.defaultPlans && typeof savedSchedule.defaultPlans === 'object' ? savedSchedule.defaultPlans : { monday: [], tuesday: [], wednesday: [], thursday: [], friday: [] },
+    daySettings: savedSchedule.daySettings && typeof savedSchedule.daySettings === 'object' ? savedSchedule.daySettings : {},
     showWeekends: false,
     displayWeek: parseWeekStart(savedSchedule.displayWeek) ? savedSchedule.displayWeek : null
   },
   currentWeekStart: parseWeekStart(savedSchedule.displayWeek) || mondayOf(new Date()),
   selectedDate: new Date(),
   editingEventId: null,
+  editingDefaultWeekday: null,
+  editorTab: 'specific',
+  defaultWeekday: ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()],
   dateLocale: localStorage.getItem('rose-ribbon-date-locale') === 'en-GB' ? 'en-GB' : 'nb-NO',
   returnFocusTarget: null,
   returnFocusDate: null,
-  pendingDeleteId: null
+  pendingDeleteId: null,
+  pendingDefaultDeleteId: null,
+  dayModeMessage: ''
 };
 
 const scheduleUrl = 'http://127.0.0.1:41731/api/schedule';
@@ -42,6 +58,19 @@ const viewedDate = document.getElementById('editor-date');
 const eventCategory = document.getElementById('event-category');
 const eventNote = document.getElementById('event-note');
 const focusPlan = document.getElementById('focus-plan');
+const DEFAULT_FOCUS = [
+  'Rose',       // Sunday
+  'Jasmine',    // Monday
+  'Bergamot',   // Tuesday
+  'Neroli',     // Wednesday
+  'Yuzu',       // Thursday
+  'Vetiver',    // Friday
+  'Tea'         // Saturday
+];
+function defaultFocus(date) {
+  const value = DEFAULT_FOCUS[date.getDay()];
+  return value || 'A quiet moment';
+}
 const saveEventButton = document.getElementById('save-event');
 const cancelEditButton = document.getElementById('cancel-edit');
 const eventFormHeading = document.getElementById('event-form-heading');
@@ -73,7 +102,7 @@ function formatDate(date, style = 'long') {
     : style === 'day'
       ? { day: 'numeric' }
       : style === 'range'
-        ? { weekday: 'long', day: 'numeric', month: 'long' }
+        ? { day: 'numeric', month: 'short' }
         : { weekday: 'long', day: 'numeric', month: 'long' };
   const formatter = new Intl.DateTimeFormat(state.dateLocale, options);
   if (state.dateLocale !== 'en-GB' || (style !== 'long' && style !== 'range')) {
@@ -98,8 +127,12 @@ function parseDateInput(value) {
 }
 
 function formatEventTime(event) {
-  if (event.time && event.endTime) return `${event.time}–${event.endTime}`;
-  return event.time || '—';
+  if (event.time && event.endTime) return `${event.time}â€“${event.endTime}`;
+  return event.time || 'â€”';
+}
+function timeSpanHtml(item) {
+  if (!item || !item.time) return '';
+  return `<span class="event-time">${escapeHtml(formatEventTime(item))}</span>`;
 }
 
 function escapeHtml(value) {
@@ -109,7 +142,15 @@ function escapeHtml(value) {
 }
 
 function renderStatus(message) {
-  statusNode.textContent = message === 'Synced' || message === 'Saved' ? '' : message;
+  if (message === 'Synced') {
+    statusNode.textContent = 'Live';
+    statusNode.style.opacity = '0.6';
+  } else if (message === 'Saved') {
+    statusNode.textContent = '';
+  } else {
+    statusNode.textContent = message;
+    statusNode.style.opacity = '1';
+  }
 }
 
 function sortedEvents(dateKey) {
@@ -138,15 +179,18 @@ function renderWeek() {
 
   weekGrid.innerHTML = days.map(date => {
     const key = keyFor(date);
-    const events = sortedEvents(key);
+    const customMode = isCustomMode(key);
+    const defaultMode = isDefaultMode(key);
+    const weekday = weekdayKeyForDate(date);
+    const events = customMode ? sortedEvents(key) : (defaultMode ? sortedDefaultItems(weekday) : sortedEvents(key));
     const plan = (state.schedule.plans || {})[key] || {};
 
     const visibleEvents = events.slice(0, 5);
     const compactEvents = events.length >= 4;
     const items = events.length
       ? visibleEvents.map(event => `
-          <div class="event-item${compactEvents ? ' event-item--compact' : ''}">
-            <span class="event-time" title="${escapeHtml(formatEventTime(event))}">${escapeHtml(formatEventTime(event))}</span>
+          <div class="event-item${compactEvents ? ' event-item--compact' : ''}${defaultMode ? ' event-item--default' : ''}">
+            ${event.time ? `<span class="event-time" title="${escapeHtml(formatEventTime(event))}">${escapeHtml(formatEventTime(event))}</span>` : ''}
             <span>
               <strong title="${escapeHtml(event.title)}">${escapeHtml(event.title)}</strong>
             </span>
@@ -167,8 +211,7 @@ function renderWeek() {
           ${items}
         </div>
         <div class="focus-box">
-          <span class="focus-label">Today's focus</span>
-          <div class="focus-text" title="${escapeHtml(plan.focus || 'A quiet moment')}">${escapeHtml(plan.focus || 'A quiet moment')}</div>
+          <div class="focus-text" title="${escapeHtml(plan.focus || defaultFocus(date))}">${escapeHtml(plan.focus || defaultFocus(date))}</div>
         </div>
       </article>
     `;
@@ -194,6 +237,8 @@ function renderWeek() {
   });
 }
 
+const isWallpaperMode = window.location.protocol === 'file:';
+
 function refreshSchedule() {
   return fetch(scheduleUrl, { cache: 'no-store' })
     .then(r => {
@@ -202,12 +247,20 @@ function refreshSchedule() {
     })
     .then(data => {
       state.schedule = {
+        version: Number.isInteger(data.version) ? data.version : state.schedule.version,
+        revision: Number.isInteger(data.revision) ? data.revision : state.schedule.revision,
         events: Array.isArray(data.events) ? data.events : [],
         plans: data.plans && typeof data.plans === 'object' ? data.plans : {},
+        defaultPlans: data.defaultPlans && typeof data.defaultPlans === 'object' ? data.defaultPlans : state.schedule.defaultPlans,
+        daySettings: data.daySettings && typeof data.daySettings === 'object' ? data.daySettings : state.schedule.daySettings,
         showWeekends: false,
-        displayWeek: parseWeekStart(data.displayWeek) ? data.displayWeek : null
+        displayWeek: isWallpaperMode ? null : (parseWeekStart(data.displayWeek) ? data.displayWeek : null)
       };
-      state.currentWeekStart = parseWeekStart(data.displayWeek) || state.currentWeekStart;
+      if (!isWallpaperMode) {
+        state.currentWeekStart = parseWeekStart(data.displayWeek) || state.currentWeekStart;
+      } else {
+        state.currentWeekStart = mondayOf(new Date());
+      }
       renderStatus('Synced');
       renderWeek();
       if (!editor.hidden) syncEditor();
@@ -225,6 +278,7 @@ function openEditor(dateKey) {
   state.returnFocusTarget = document.activeElement;
   state.returnFocusDate = state.returnFocusTarget.closest?.('.day-card')?.dataset.date || null;
   state.editingEventId = null;
+  state.editorTab = 'specific';
   eventForm.reset();
   clearFormErrors();
   setEndTimeVisible(false);
@@ -267,61 +321,178 @@ function closeEditor() {
 
 function syncEditor() {
   const key = keyFor(state.selectedDate);
-  const items = sortedEvents(key);
   const plans = (state.schedule.plans || {})[key] || {};
   viewedDate.value = key;
   viewedDate.lang = dateLocaleAttribute();
   selectedDateNode.lang = dateLocaleAttribute();
   selectedDateNode.textContent = formatDate(state.selectedDate);
   if (!state.editingEventId) eventDate.value = key;
-  eventList.innerHTML = items.length
-    ? items.map(item => `
-      <div class="event-item">
-        <span class="event-time">${escapeHtml(formatEventTime(item))}</span>
-        <span>
-          <strong>${escapeHtml(item.title)}</strong>
-          ${item.category ? `<small>${escapeHtml(item.category)}</small>` : ''}
-          ${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}
-          <div class="event-actions">
-            <button type="button" class="btn btn--secondary btn--small" data-edit="${escapeHtml(item.id)}" aria-label="Edit ${escapeHtml(item.title)}">Edit</button>
-            ${state.pendingDeleteId === item.id
-              ? `<span class="delete-confirmation">Delete?</span>
-                 <button type="button" class="btn btn--quiet-destructive btn--small" data-confirm-delete="${escapeHtml(item.id)}" aria-label="Yes, delete ${escapeHtml(item.title)}">Yes</button>
-                 <button type="button" class="btn btn--secondary btn--small" data-keep="${escapeHtml(item.id)}" aria-label="Keep ${escapeHtml(item.title)}">Keep it</button>`
-              : `<button type="button" class="btn btn--quiet-destructive btn--small" data-delete="${escapeHtml(item.id)}" aria-label="Delete ${escapeHtml(item.title)}">Delete</button>`}
+
+  // Tabs
+  const tabDefault = document.getElementById('tab-default');
+  const tabSpecific = document.getElementById('tab-specific');
+  const panelDefault = document.getElementById('panel-default');
+  const panelSpecific = document.getElementById('panel-specific');
+  if (tabDefault && tabSpecific && panelDefault && panelSpecific) {
+    const isDefaultTab = state.editorTab === 'default';
+    tabDefault.setAttribute('aria-selected', String(isDefaultTab));
+    tabSpecific.setAttribute('aria-selected', String(!isDefaultTab));
+    tabDefault.tabIndex = isDefaultTab ? 0 : -1;
+    tabSpecific.tabIndex = isDefaultTab ? -1 : 0;
+    panelDefault.hidden = !isDefaultTab;
+    panelSpecific.hidden = isDefaultTab;
+  }
+
+  // Weekday chips
+  document.querySelectorAll('.chip').forEach(chip => {
+    const wd = chip.dataset.weekday;
+    chip.setAttribute('aria-pressed', String(wd === state.defaultWeekday));
+    chip.classList.toggle('chip--active', wd === state.defaultWeekday);
+  });
+
+  // Default tab list
+  const defaultList = document.getElementById('default-event-list');
+  if (defaultList) {
+    const items = sortedDefaultItems(state.defaultWeekday);
+    defaultList.innerHTML = items.length
+      ? items.map(item => `
+        <div class="event-item">
+          ${timeSpanHtml(item)}
+          <span>
+            <strong>${escapeHtml(item.title)}</strong>
+            ${item.category ? `<small>${escapeHtml(item.category)}</small>` : ''}
+            ${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}
+            <div class="event-actions">
+              <button type="button" class="btn btn--secondary btn--small" data-default-edit="${escapeHtml(item.id)}" aria-label="Edit ${escapeHtml(item.title)}">Edit</button>
+              ${state.pendingDefaultDeleteId === item.id
+                ? `<span class="delete-confirmation">Delete?</span>
+                   <button type="button" class="btn btn--quiet-destructive btn--small" data-default-confirm-delete="${escapeHtml(item.id)}" aria-label="Yes, delete ${escapeHtml(item.title)}">Yes</button>
+                   <button type="button" class="btn btn--secondary btn--small" data-default-keep="${escapeHtml(item.id)}" aria-label="Keep ${escapeHtml(item.title)}">Keep it</button>`
+                : `<button type="button" class="btn btn--quiet-destructive btn--small" data-default-delete="${escapeHtml(item.id)}" aria-label="Delete ${escapeHtml(item.title)}">Delete</button>`}
+            </div>
+          </span>
+        </div>
+      `).join('')
+      : '<p class="empty-state">No default items yet.</p>';
+    defaultList.querySelectorAll('[data-default-edit]').forEach(btn => {
+      btn.addEventListener('click', () => startEditingDefault(btn.dataset.defaultEdit));
+    });
+    defaultList.querySelectorAll('[data-default-delete]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.pendingDefaultDeleteId = btn.dataset.defaultDelete;
+        syncEditor();
+      });
+    });
+    defaultList.querySelectorAll('[data-default-confirm-delete]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.pendingDefaultDeleteId = null;
+        deleteDefaultItem(btn.dataset.defaultConfirmDelete);
+      });
+    });
+    defaultList.querySelectorAll('[data-default-keep]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.pendingDefaultDeleteId = null;
+        syncEditor();
+      });
+    });
+  }
+
+  // Specific tab
+  const specificList = document.getElementById('specific-event-list');
+  const defaultPreview = document.getElementById('default-preview');
+  const useDefaultSwitch = document.getElementById('use-default-switch');
+  const startFromDefaultBtn = document.getElementById('start-from-default');
+  const dayModeMessage = document.getElementById('day-mode-message');
+  const customMode = isCustomMode(key);
+  const defaultMode = !customMode;
+  if (useDefaultSwitch) {
+    useDefaultSwitch.setAttribute('aria-checked', String(defaultMode));
+    useDefaultSwitch.classList.toggle('switch--on', defaultMode);
+  }
+  if (dayModeMessage) {
+    if (state.dayModeMessage) {
+      dayModeMessage.textContent = state.dayModeMessage;
+      dayModeMessage.hidden = false;
+    } else {
+      dayModeMessage.hidden = true;
+    }
+  }
+  if (defaultPreview) {
+    if (defaultMode) {
+      const ditems = sortedDefaultItems(weekdayKeyForDate(state.selectedDate));
+      defaultPreview.hidden = ditems.length === 0;
+      defaultPreview.innerHTML = ditems.length
+        ? ditems.map(item => `
+          <div class="event-item event-item--default">
+            ${timeSpanHtml(item)}
+            <span><strong>${escapeHtml(item.title)}</strong></span>
           </div>
-        </span>
-      </div>
-    `).join('')
-    : '<p class="empty-state">No appointments yet.</p>';
-
-  focusPlan.value = plans.focus || '';
-
-  eventList.querySelectorAll('[data-edit]').forEach(btn => {
-    btn.addEventListener('click', () => startEditing(btn.dataset.edit));
-  });
-  eventList.querySelectorAll('[data-delete]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.pendingDeleteId = btn.dataset.delete;
-      syncEditor();
-      eventList.querySelector('[data-confirm-delete]')?.focus();
+        `).join('')
+        : '';
+    } else {
+      defaultPreview.hidden = true;
+      defaultPreview.innerHTML = '';
+    }
+  }
+  if (specificList) {
+    const items = customMode ? sortedEvents(key) : [];
+    specificList.innerHTML = customMode
+      ? (items.length ? items.map(item => `
+        <div class="event-item">
+          ${timeSpanHtml(item)}
+          <span>
+            <strong>${escapeHtml(item.title)}</strong>
+            ${item.category ? `<small>${escapeHtml(item.category)}</small>` : ''}
+            ${item.note ? `<small>${escapeHtml(item.note)}</small>` : ''}
+            <div class="event-actions">
+              <button type="button" class="btn btn--secondary btn--small" data-edit="${escapeHtml(item.id)}" aria-label="Edit ${escapeHtml(item.title)}">Edit</button>
+              ${state.pendingDeleteId === item.id
+                ? `<span class="delete-confirmation">Delete?</span>
+                   <button type="button" class="btn btn--quiet-destructive btn--small" data-confirm-delete="${escapeHtml(item.id)}" aria-label="Yes, delete ${escapeHtml(item.title)}">Yes</button>
+                   <button type="button" class="btn btn--secondary btn--small" data-keep="${escapeHtml(item.id)}" aria-label="Keep ${escapeHtml(item.title)}">Keep it</button>`
+                : `<button type="button" class="btn btn--quiet-destructive btn--small" data-delete="${escapeHtml(item.id)}" aria-label="Delete ${escapeHtml(item.title)}">Delete</button>`}
+            </div>
+          </span>
+        </div>
+      `).join('') : '<p class="empty-state">No appointments yet.</p>')
+      : '';
+    specificList.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => startEditing(btn.dataset.edit));
     });
-  });
-  eventList.querySelectorAll('[data-confirm-delete]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.pendingDeleteId = null;
-      deleteEvent(btn.dataset.confirmDelete);
+    specificList.querySelectorAll('[data-delete]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.pendingDeleteId = btn.dataset.delete;
+        syncEditor();
+      });
     });
-  });
-  eventList.querySelectorAll('[data-keep]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.pendingDeleteId = null;
-      syncEditor();
+    specificList.querySelectorAll('[data-confirm-delete]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.pendingDeleteId = null;
+        deleteEvent(btn.dataset.confirmDelete);
+      });
     });
-  });
-}
+    specificList.querySelectorAll('[data-keep]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.pendingDeleteId = null;
+        syncEditor();
+      });
+    });
+  }
+  if (startFromDefaultBtn) {
+    const customWithZero = customMode && sortedEvents(key).length === 0;
+    startFromDefaultBtn.hidden = !customWithZero;
+  }
+  // Form date field visibility
+  const dateField = document.getElementById('event-date-field');
+  if (dateField) dateField.hidden = state.editorTab === 'default';
 
-function setEditorDate(date) {
+  if (document.activeElement !== focusPlan) {
+    focusPlan.value = plans.focus || '';
+  }
+
+  // Plan save button binding handled separately
+}function setEditorDate(date) {
+  state.dayModeMessage = '';
   state.selectedDate = date;
   syncEditor();
 }
@@ -375,7 +546,7 @@ function validateEventForm() {
     setFieldError('event-title', 'event-title-error', 'Please enter a short title.');
     invalidFields.push(eventTitle);
   }
-  if (!parseDateInput(eventDate.value)) {
+  if (state.editorTab !== 'default' && !parseDateInput(eventDate.value)) {
     setFieldError('event-date', 'event-date-error', 'Please choose a valid date.');
     invalidFields.push(eventDate);
   }
@@ -423,10 +594,74 @@ function startEditing(eventId) {
   eventTitle.focus();
 }
 
+function startEditingDefault(itemId) {
+  const weekday = state.defaultWeekday;
+  const item = (state.schedule.defaultPlans[weekday] || []).find(e => e.id === itemId);
+  if (!item) return;
+  state.editingEventId = itemId;
+  clearFormErrors();
+  eventTitle.value = item.title || '';
+  eventTime.value = item.time || '';
+  eventEndTime.value = item.endTime || '';
+  setEndTimeVisible(Boolean(item.endTime));
+  eventCategory.value = item.category || 'Appointment';
+  eventNote.value = item.note || '';
+  updateTitleCount();
+  saveEventButton.textContent = 'Save changes';
+  eventFormHeading.textContent = 'Edit default item';
+  cancelEditButton.hidden = false;
+  eventTitle.focus();
+}
+
+function deleteDefaultItem(itemId) {
+  const weekday = state.defaultWeekday;
+  const list = (state.schedule.defaultPlans[weekday] || []).filter(item => item.id !== itemId);
+  state.schedule.defaultPlans = { ...(state.schedule.defaultPlans || {}), [weekday]: list };
+  state.pendingDefaultDeleteId = null;
+  saveSchedule()
+    .then(() => refreshSchedule())
+    .catch(err => renderStatus(err.message || 'Delete failed'));
+}
+
+
 function handleEventSubmit(event) {
   event.preventDefault();
   if (!validateEventForm()) return;
   const title = eventTitle.value.trim();
+
+  if (state.editorTab === 'default') {
+    const weekday = state.defaultWeekday;
+    const list = [...(state.schedule.defaultPlans[weekday] || [])];
+    const payload = {
+      id: state.editingEventId || `default-${Date.now()}`,
+      title,
+      time: eventTime.value,
+      category: eventCategory.value,
+      note: eventNote.value.trim()
+    };
+    if (eventEndTime.value) payload.endTime = eventEndTime.value;
+    if (state.editingEventId) {
+      const idx = list.findIndex(item => item.id === state.editingEventId);
+      if (idx >= 0) list[idx] = payload;
+    } else {
+      list.push(payload);
+    }
+    state.schedule.defaultPlans = { ...(state.schedule.defaultPlans || emptyDefaultPlans()), [weekday]: list };
+    saveSchedule()
+      .then(() => refreshSchedule())
+      .then(() => {
+        state.editingEventId = null;
+        eventForm.reset();
+        clearFormErrors();
+        setEndTimeVisible(false);
+        saveEventButton.textContent = 'Save appointment';
+        eventFormHeading.textContent = 'Add an appointment';
+        cancelEditButton.hidden = true;
+        syncEditor();
+      })
+      .catch(err => renderStatus(err.message || 'Save failed'));
+    return;
+  }
 
   const payload = {
     id: state.editingEventId || `event-${Date.now()}`,
@@ -447,12 +682,29 @@ function handleEventSubmit(event) {
   }
   state.schedule.events = existing;
 
+  // Adding/editing a custom event switches that day to custom mode.
+  const daySettings = { ...(state.schedule.daySettings || {}) };
+  daySettings[eventDate.value] = { useDefault: false };
+  state.schedule.daySettings = daySettings;
+
+  // Follow the edited day's week so the new event is visible.
+  state.currentWeekStart = mondayOf(parseDateInput(eventDate.value) || new Date());
+  state.schedule.displayWeek = keyFor(state.currentWeekStart);
+
   saveSchedule()
     .then(() => refreshSchedule())
-    .then(() => closeEditor())
+    .then(() => {
+      state.editingEventId = null;
+      eventForm.reset();
+      clearFormErrors();
+      setEndTimeVisible(false);
+      saveEventButton.textContent = 'Save appointment';
+      eventFormHeading.textContent = 'Add an appointment';
+      cancelEditButton.hidden = true;
+      closeEditor();
+    })
     .catch(err => renderStatus(err.message || 'Save failed'));
 }
-
 function deleteEvent(eventId) {
   state.schedule.events = (state.schedule.events || []).filter(item => item.id !== eventId);
   saveSchedule()
@@ -509,6 +761,124 @@ document.getElementById('previous-week').addEventListener('click', () => {
   weekStart.setDate(weekStart.getDate() - 7);
   setDisplayedWeek(weekStart);
 });
+// Tab switching
+function setEditorTab(tab) {
+  state.editorTab = tab;
+  state.editingEventId = null;
+  eventForm.reset();
+  clearFormErrors();
+  setEndTimeVisible(false);
+  saveEventButton.textContent = 'Save appointment';
+  eventFormHeading.textContent = 'Add an appointment';
+  cancelEditButton.hidden = true;
+  syncEditor();
+}
+const tabDefaultBtn = document.getElementById('tab-default');
+const tabSpecificBtn = document.getElementById('tab-specific');
+if (tabDefaultBtn) tabDefaultBtn.addEventListener('click', () => setEditorTab('default'));
+if (tabSpecificBtn) tabSpecificBtn.addEventListener('click', () => setEditorTab('specific'));
+
+// Arrow-key support for tabs
+const tabList = document.querySelector('.editor-tabs');
+if (tabList) {
+  tabList.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    setEditorTab(state.editorTab === 'default' ? 'specific' : 'default');
+    const nextTab = state.editorTab === 'default' ? tabDefaultBtn : tabSpecificBtn;
+    nextTab?.focus();
+  });
+}
+
+// Weekday chips
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    state.defaultWeekday = chip.dataset.weekday;
+    state.editingEventId = null;
+    eventForm.reset();
+    clearFormErrors();
+    setEndTimeVisible(false);
+    syncEditor();
+  });
+});
+
+// Copy to all weekdays
+const copyAllBtn = document.getElementById('copy-default-all');
+if (copyAllBtn) {
+  copyAllBtn.addEventListener('click', () => {
+    const items = state.schedule.defaultPlans[state.defaultWeekday] || [];
+    const copy = items.map(item => ({ ...item, id: `default-${Date.now()}-${Math.random().toString(16).slice(2)}` }));
+    const next = { ...(state.schedule.defaultPlans || emptyDefaultPlans()) };
+    ['monday','tuesday','wednesday','thursday','friday'].forEach(wd => { next[wd] = copy.map(i => ({ ...i })); });
+    state.schedule.defaultPlans = next;
+    saveSchedule().then(() => refreshSchedule()).catch(err => renderStatus(err.message || 'Save failed'));
+  });
+}
+
+// Switch
+const useDefaultSwitch = document.getElementById('use-default-switch');
+if (useDefaultSwitch) {
+  useDefaultSwitch.addEventListener('click', () => {
+    const key = keyFor(state.selectedDate);
+    const custom = isCustomMode(key);
+    const daySettings = { ...(state.schedule.daySettings || {}) };
+    if (custom) {
+      // switch ON: keep custom items, hide them
+      daySettings[key] = { useDefault: true };
+      const hasCustom = (state.schedule.events || []).some(e => e.date === key);
+      state.dayModeMessage = hasCustom ? 'Your own plans for this day are kept, just hidden.' : '';
+    } else {
+      // switch OFF: custom mode
+      daySettings[key] = { useDefault: false };
+      state.dayModeMessage = '';
+    }
+    state.schedule.daySettings = daySettings;
+    saveSchedule().then(() => refreshSchedule()).then(() => {
+      if (custom) {
+        // keep message visible after refresh? reset after next sync? keep state
+      } else {
+        state.dayModeMessage = '';
+      }
+      syncEditor();
+    }).catch(err => renderStatus(err.message || 'Save failed'));
+  });
+}
+
+// Start from default
+const startFromDefaultBtn = document.getElementById('start-from-default');
+if (startFromDefaultBtn) {
+  startFromDefaultBtn.addEventListener('click', () => {
+    const key = keyFor(state.selectedDate);
+    const weekday = weekdayKeyForDate(state.selectedDate);
+    const defaults = sortedDefaultItems(weekday);
+    const copies = defaults.map(item => ({
+      id: `event-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      date: key,
+      title: item.title,
+      time: item.time,
+      category: item.category,
+      note: item.note,
+      ...(item.endTime ? { endTime: item.endTime } : {})
+    }));
+    const daySettings = { ...(state.schedule.daySettings || {}) };
+    daySettings[key] = { useDefault: false };
+    state.schedule.daySettings = daySettings;
+    state.schedule.events = [...(state.schedule.events || []), ...copies];
+    state.dayModeMessage = '';
+    saveSchedule().then(() => refreshSchedule()).catch(err => renderStatus(err.message || 'Save failed'));
+  });
+}
+
+// Save day plan button
+const saveDayPlanBtn = document.getElementById('save-day-plan');
+if (saveDayPlanBtn) {
+  saveDayPlanBtn.addEventListener('click', () => handlePlanSubmit(new Event('submit')));
+}
+
+// clear dayModeMessage on date change? Keep simple.
+
+// plansForm no longer submits
+// eventForm already bound
 
 document.getElementById('next-week').addEventListener('click', () => {
   const weekStart = new Date(state.currentWeekStart);
@@ -619,11 +989,44 @@ editor.addEventListener('keydown', event => {
 });
 
 eventForm.addEventListener('submit', handleEventSubmit);
-plansForm.addEventListener('submit', handlePlanSubmit);
+// plansForm no longer submits; save-day-plan button handles it
 document.getElementById('language-no').setAttribute('aria-pressed', String(state.dateLocale === 'nb-NO'));
 document.getElementById('language-en').setAttribute('aria-pressed', String(state.dateLocale === 'en-GB'));
 updateTitleCount();
 state.selectedDate = new Date();
 renderWeek();
 refreshSchedule();
-window.setInterval(refreshSchedule, 10000);
+window.setInterval(refreshSchedule, 5000);
+
+
+
+
+function isCustomMode(dateKey) {
+  return !!(state.schedule.daySettings && state.schedule.daySettings[dateKey] && state.schedule.daySettings[dateKey].useDefault === false);
+}
+
+function isDefaultMode(dateKey) {
+  const date = parseDateInput(dateKey);
+  const weekday = date ? weekdayKeyForDate(date) : null;
+  return !!weekday && ['monday','tuesday','wednesday','thursday','friday'].includes(weekday) && !isCustomMode(dateKey);
+}
+
+function defaultItemsForWeekday(weekday) {
+  if (!weekday || !state.schedule.defaultPlans || !state.schedule.defaultPlans[weekday]) return [];
+  return state.schedule.defaultPlans[weekday];
+}
+
+function sortedDefaultItems(weekday) {
+  return [...defaultItemsForWeekday(weekday)].sort((a, b) => String(a.time || '99:99').localeCompare(String(b.time || '99:99')));
+}
+
+function itemsForDate(dateKey) {
+  if (isCustomMode(dateKey)) return sortedEvents(dateKey);
+  const date = parseDateInput(dateKey);
+  const weekday = date ? weekdayKeyForDate(date) : null;
+  if (!weekday || !['monday','tuesday','wednesday','thursday','friday'].includes(weekday)) return sortedEvents(dateKey);
+  return sortedDefaultItems(weekday);
+}
+
+
+
