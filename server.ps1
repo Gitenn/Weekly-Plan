@@ -75,19 +75,107 @@ function Normalize-DisplayWeek {
     return $weekStart.ToString("yyyy-MM-dd", [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
+function New-EmptyDefaultPlans {
+    return [ordered]@{
+        monday = @()
+        tuesday = @()
+        wednesday = @()
+        thursday = @()
+        friday = @()
+    }
+}
+
+function New-EmptySchedule {
+    return [ordered]@{
+        initialized = $false
+        version = 2
+        revision = 0
+        events = @()
+        plans = [ordered]@{}
+        defaultPlans = New-EmptyDefaultPlans
+        daySettings = [ordered]@{}
+        showWeekends = $false
+        displayWeek = $null
+    }
+}
+
+function Write-ScheduleFile {
+    param([object] $Schedule)
+
+    $json = ConvertTo-Json -InputObject $Schedule -Depth 12
+    $temporaryPath = "$dataPath.tmp"
+    [System.IO.File]::WriteAllText($temporaryPath, $json, [System.Text.UTF8Encoding]::new($false))
+    Move-Item -LiteralPath $temporaryPath -Destination $dataPath -Force | Out-Null
+}
+
 function Read-Schedule {
     if (-not (Test-Path -LiteralPath $dataPath -PathType Leaf)) {
-        return [ordered]@{ initialized = $false; events = @(); plans = [ordered]@{}; showWeekends = $false; displayWeek = $null }
+        return New-EmptySchedule
     }
 
     $saved = Get-Content -LiteralPath $dataPath -Raw | ConvertFrom-Json
     if ($null -eq $saved.events -or $null -eq $saved.plans) {
         throw "Saved schedule data is malformed."
     }
+
+    if ($null -ne $saved.version -and [int]$saved.version -gt 2) {
+        throw "Saved schedule version $($saved.version) is newer than this application supports."
+    }
+
+    if ($saved.version -ne 2) {
+        $backupPath = "$dataPath.pre-v2.backup.json"
+        if (-not (Test-Path -LiteralPath $backupPath -PathType Leaf)) {
+            [System.IO.File]::Copy($dataPath, $backupPath, $false)
+        }
+
+        $daySettings = [ordered]@{}
+        foreach ($event in @($saved.events)) {
+            $eventDate = [string]$event.date
+            $parsedDate = [datetime]::MinValue
+            $isValidDate = [datetime]::TryParseExact(
+                $eventDate,
+                "yyyy-MM-dd",
+                [System.Globalization.CultureInfo]::InvariantCulture,
+                [System.Globalization.DateTimeStyles]::None,
+                [ref]$parsedDate
+            )
+            if ($isValidDate) {
+                $daySettings[$eventDate] = [ordered]@{ useDefault = $false }
+            }
+        }
+
+        $revision = 0L
+        if ($null -ne $saved.revision) {
+            $parsedRevision = 0L
+            if (-not [long]::TryParse([string]$saved.revision, [ref]$parsedRevision) -or $parsedRevision -lt 0) {
+                throw "Saved schedule revision is invalid."
+            }
+            $revision = $parsedRevision
+        }
+
+        $saved = [ordered]@{
+            version = 2
+            revision = $revision
+            events = @($saved.events)
+            plans = $saved.plans
+            defaultPlans = New-EmptyDefaultPlans
+            daySettings = $daySettings
+            showWeekends = $saved.showWeekends -eq $true
+            displayWeek = Normalize-DisplayWeek $saved.displayWeek
+        }
+        Write-ScheduleFile $saved
+    } elseif ($null -eq $saved.defaultPlans -or $null -eq $saved.daySettings -or $null -eq $saved.revision) {
+        throw "Saved version 2 schedule is malformed."
+    }
+
     return [ordered]@{
         initialized = $true
+        version = 2
+        revision = [long]$saved.revision
         events = @($saved.events)
         plans = $saved.plans
+        defaultPlans = $saved.defaultPlans
+        daySettings = $saved.daySettings
         showWeekends = $saved.showWeekends -eq $true
         displayWeek = Normalize-DisplayWeek $saved.displayWeek
     }
@@ -100,8 +188,12 @@ function Set-ScheduleSnapshot {
     )
 
     $scheduleJson = ConvertTo-Json -InputObject ([ordered]@{
+        version = 2
+        revision = [long]$Schedule.revision
         events = @($Schedule.events)
         plans = $Schedule.plans
+        defaultPlans = $Schedule.defaultPlans
+        daySettings = $Schedule.daySettings
         showWeekends = $Schedule.showWeekends -eq $true
         displayWeek = Normalize-DisplayWeek $Schedule.displayWeek
     }) -Depth 12 -Compress
@@ -193,7 +285,7 @@ function Sync-LivelyTemporaryCopies {
         $pagePath = Join-Path $folderPath "index.html"
         [System.IO.File]::WriteAllText($pagePath, $page, [System.Text.UTF8Encoding]::new($false))
         foreach ($fileName in @("styles.css", "app.js")) {
-            Copy-Item -LiteralPath (Join-Path $PSScriptRoot $fileName) -Destination (Join-Path $folderPath $fileName) -Force
+            Copy-Item -LiteralPath (Join-Path $PSScriptRoot $fileName) -Destination (Join-Path $folderPath $fileName) -Force | Out-Null
         }
 
         if (-not $RefreshAssets) {
@@ -250,18 +342,32 @@ function Write-Schedule {
         throw "Schedule has too many appointments."
     }
 
+    $current = Read-Schedule
+    $clientRevision = 0L
+    if ($Schedule.version -ne 2 -or
+        -not [long]::TryParse([string]$Schedule.revision, [ref]$clientRevision) -or
+        $clientRevision -lt 0 -or
+        $clientRevision -ne [long]$current.revision) {
+        return [ordered]@{ saved = $false; schedule = $current }
+    }
+    if ($null -eq $Schedule.defaultPlans -or $null -eq $Schedule.daySettings) {
+        throw "Schedule must use the version 2 data model."
+    }
+
     $persisted = [ordered]@{
+        version = 2
+        revision = ([long]$current.revision) + 1
         events = @($Schedule.events)
         plans = $Schedule.plans
+        defaultPlans = $Schedule.defaultPlans
+        daySettings = $Schedule.daySettings
         showWeekends = $Schedule.showWeekends -eq $true
         displayWeek = Normalize-DisplayWeek $Schedule.displayWeek
     }
-    $json = ConvertTo-Json -InputObject $persisted -Depth 12
-    $temporaryPath = "$dataPath.tmp"
-    [System.IO.File]::WriteAllText($temporaryPath, $json, [System.Text.UTF8Encoding]::new($false))
-    Move-Item -LiteralPath $temporaryPath -Destination $dataPath -Force
+    Write-ScheduleFile $persisted
     Write-WallpaperSnapshot $persisted
     Sync-LivelyTemporaryCopies $persisted
+    return [ordered]@{ saved = $true; revision = $persisted.revision }
 }
 
 function Handle-Request {
@@ -302,8 +408,12 @@ function Handle-Request {
             $reader.Dispose()
         }
         $schedule = ConvertFrom-Json -InputObject $body
-        Write-Schedule $schedule
-        Write-JsonResponse $response 200 @{ saved = $true }
+        $result = Write-Schedule $schedule
+        if (-not $result.saved) {
+            Write-JsonResponse $response 409 @{ error = "Schedule revision is out of date."; schedule = $result.schedule }
+            return
+        }
+        Write-JsonResponse $response 200 @{ saved = $true; revision = $result.revision }
         return
     }
 

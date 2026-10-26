@@ -1,0 +1,71 @@
+{
+    "events":  [
+                   {
+                       "id":  "53d6718c-ff56-4828-8654-04d51d301bbb",
+                       "date":  "2026-10-25",
+                       "title":  "I am picking a flower",
+                       "time":  "18:26",
+                       "category":  "Celebration",
+                       "note":  "On the cheek"
+                   },
+                   {
+                       "id":  "4c99ac35-5a35-42a9-8f0d-de60bf1cf06c",
+                       "date":  "2026-10-22",
+                       "title":  "Eating",
+                       "time":  "",
+                       "category":  "Appointment",
+                       "note":  ""
+                   },
+                   {
+                       "id":  "fbf240f6-c8c7-4767-95d7-545f062f5925",
+                       "date":  "2026-10-22",
+                       "title":  "Sleeping",
+                       "time":  "",
+                       "category":  "Appointment",
+                       "note":  ""
+                   },
+                   {
+                       "id":  "b19c2910-2536-47a0-b219-26081ecf2256",
+                       "date":  "2026-10-23",
+                       "title":  "A test",
+                       "time":  "",
+                       "category":  "Appointment",
+                       "note":  ""
+                   },
+                   {
+                       "id":  "f17b442a-546e-4c5a-8886-b6e87c7c21b3",
+                       "date":  "2026-10-27",
+                       "title":  "A test",
+                       "time":  "",
+                       "category":  "Appointment",
+                       "note":  ""
+                   },
+                   {
+                       "id":  "event-1792970690110",
+                       "date":  "2026-10-19",
+                       "title":  "I am making a plan",
+                       "time":  "22:24",
+                       "category":  "Work",
+                       "note":  ""
+                   },
+                   {
+                       "id":  "event-1793021867563",
+                       "date":  "2026-10-26",
+                       "title":  "Making dinner",
+                       "time":  "17:00",
+                       "category":  "Personal",
+                       "note":  ""
+                   }
+               ],
+    "plans":  {
+                  "2026-10-25":  {
+                                     "focus":  "Love is above all",
+                                     "meal":  "Something sweet"
+                                 },
+                  "2026-10-26":  {
+                                     "focus":  "Chill monday"
+                                 }
+              },
+    "showWeekends":  false,
+    "displayWeek":  "2026-10-26"
+}

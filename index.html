@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#f1e7df" />
     <title>Rose &amp; Ribbon — Weekly Planner</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,500&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div class="page-frame" aria-hidden="true">
@@ -49,21 +52,17 @@
 
     <main class="planner-shell">
       <header class="masthead">
-        <p class="eyebrow">A little order, a lot of lovely</p>
         <h1>Your weekly plan</h1>
-        <div class="rule" aria-hidden="true">
-          <img src="assets/botanical/image-from-rawpixel-id-16823136-png.png" alt="" />
-        </div>
       </header>
 
       <nav class="toolbar" aria-label="Weekly planner controls">
         <button type="button" class="nav-button" id="previous-week" aria-label="Previous week">‹</button>
-        <div id="week-label" class="week-label" aria-live="polite"></div>
+        <div id="week-label" class="week-label" aria-live="polite" aria-atomic="true"></div>
         <button type="button" class="nav-button" id="next-week" aria-label="Next week">›</button>
         <button type="button" class="today-button" id="this-week">This week</button>
       </nav>
 
-      <section id="week-grid" class="week-grid" aria-label="Weekly planner"></section>
+      <section id="week-grid" class="week-grid" aria-label="Weekly planner cards"></section>
 
       <footer class="footer">
         <p class="footer-quote">Elegance is mandatory, stress is optional.</p>
@@ -77,68 +76,98 @@
 
     <div id="scrim" class="scrim" aria-hidden="true" hidden></div>
 
-    <aside id="editor" class="editor" aria-labelledby="editor-title" hidden>
+    <aside id="editor" class="editor" role="dialog" aria-modal="true" aria-labelledby="editor-title" hidden>
       <div class="editor-header">
         <div>
           <p class="eyebrow eyebrow--small">Your private concierge</p>
           <h2 id="editor-title">Plan the day</h2>
-          <p id="selected-date" class="selected-date"></p>
+          <div class="editor-day-picker">
+            <button type="button" id="previous-day" class="day-nav-button" aria-label="Previous day">‹</button>
+            <div class="editor-date-display">
+              <input id="editor-date" name="viewedDate" type="date" aria-label="Choose a day" />
+              <p id="selected-date" class="selected-date" lang="nb-NO"></p>
+            </div>
+            <button type="button" id="next-day" class="day-nav-button" aria-label="Next day">›</button>
+          </div>
         </div>
         <button type="button" id="close-editor" class="close-button" aria-label="Close planner editor">×</button>
       </div>
 
-      <section>
-        <h3 class="section-title">Appointments</h3>
-        <div id="event-list" class="event-list"></div>
-      </section>
+      <div class="editor-content">
+        <section>
+          <h3 class="section-title">Appointments</h3>
+          <div id="event-list" class="event-list"></div>
+        </section>
 
-      <section>
-        <h3 id="event-form-heading" class="section-title">Add an appointment</h3>
-        <form id="event-form">
-          <div class="form-grid">
-            <div class="field field--full">
-              <label for="event-title">What is happening?</label>
-              <input id="event-title" name="title" maxlength="64" required placeholder="A lovely little plan" />
+        <section>
+          <h3 id="event-form-heading" class="section-title">Add an appointment</h3>
+          <form id="event-form" novalidate>
+            <div class="form-grid">
+              <div class="field field--full">
+                
+                <input id="event-title" name="title" maxlength="40" required placeholder="Short and sweet to fit the card" aria-describedby="event-title-hint" />
+                <div class="field-meta">
+                  <span id="event-title-count" class="field-count" aria-live="polite">0/40</span>
+                </div>
+                <p id="event-title-error" class="field-error" role="alert" hidden></p>
+              </div>
+              <div class="field field--full">
+                <label for="event-date">Date</label>
+                <input id="event-date" name="date" type="date" required aria-describedby="event-date-error" />
+                <p id="event-date-error" class="field-error" role="alert" hidden></p>
+              </div>
+              <div class="field">
+                <label for="event-time">Start time</label>
+                <input id="event-time" name="time" type="time" aria-describedby="event-time-error" />
+                <p id="event-time-error" class="field-error" role="alert" hidden></p>
+                <button type="button" id="toggle-end-time" class="text-link" aria-expanded="false" aria-controls="end-time-field">Add end time</button>
+              </div>
+              <div class="field" id="end-time-field" hidden>
+                <label for="event-end-time">End time (optional)</label>
+                <input id="event-end-time" name="endTime" type="time" aria-describedby="event-end-time-error" />
+                <p id="event-end-time-error" class="field-error" role="alert" hidden></p>
+              </div>
+              <div class="field field--full">
+                <select id="event-category" name="category">
+                  <option value="Appointment">Appointment</option>
+                  <option value="Work">Work</option>
+                  <option value="Personal">Personal</option>
+                  <option value="Wellbeing">Wellbeing</option>
+                  <option value="Celebration">Celebration</option>
+                </select>
+              </div>
+              <div class="field field--full">
+                <label for="event-note">Details (optional)</label>
+                <textarea id="event-note" name="note" maxlength="160" placeholder="A place, a reminder, or a little note…"></textarea>
+              </div>
             </div>
-            <div class="field">
-              <label for="event-time">Time</label>
-              <input id="event-time" name="time" type="time" />
-            </div>
-            <div class="field">
-              <label for="event-category">Occasion</label>
-              <select id="event-category" name="category">
-                <option value="Appointment">Appointment</option>
-                <option value="Work">Work</option>
-                <option value="Personal">Personal</option>
-                <option value="Wellbeing">Wellbeing</option>
-                <option value="Celebration">Celebration</option>
-              </select>
-            </div>
-            <div class="field field--full">
-              <label for="event-note">Details (optional)</label>
-              <textarea id="event-note" name="note" maxlength="160" placeholder="A place, a reminder, or a little note…"></textarea>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="primary-button" id="save-event">Add appointment</button>
-            <button type="button" class="ghost-button" id="cancel-edit" hidden>Cancel edit</button>
-          </div>
-        </form>
-      </section>
+            <button type="button" id="cancel-edit" class="btn btn--secondary" hidden>Cancel edit</button>
+          </form>
+        </section>
 
-      <section>
-        <h3 class="section-title">Daily plan</h3>
-        <form id="plans-form">
-          <div class="field field--full">
-            <label for="focus-plan">Focus for the day</label>
-            <input id="focus-plan" name="focus" maxlength="80" placeholder="One thing to make room for" />
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="primary-button">Save day plan</button>
-          </div>
-        </form>
-      </section>
+        <section>
+          <h3 class="section-title">Focus for the day</h3>
+          <form id="plans-form">
+            <div class="field field--full">
+              <input id="focus-plan" name="focus" maxlength="80" placeholder="One thing to make room for" />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn--primary">Save day plan</button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div class="editor-footer">
+        <button type="button" id="cancel-editor" class="btn btn--secondary">Cancel</button>
+        <button type="submit" form="event-form" class="btn btn--primary" id="save-event">Save appointment</button>
+      </div>
     </aside>
+
+    <div class="language-toggle" role="group" aria-label="Date language">
+      <button type="button" class="language-button" id="language-no" aria-pressed="true">NO</button>
+      <button type="button" class="language-button" id="language-en" aria-pressed="false">EN</button>
+    </div>
 
     <script>
       window.ROSE_RIBBON_DATA = {"events":[],"plans":{},"showWeekends":false,"displayWeek":null}; // ROSE_RIBBON_DATA
