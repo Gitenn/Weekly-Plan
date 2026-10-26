@@ -1,8 +1,8 @@
-﻿:root {
+:root {
   --bg: #f6ece2;
   --paper: #f9f1ea;
   --paper-strong: #f4e5d7;
-  --rose: #8a5560;
+  --rose: #8d495a;
   --rose-dark: #5e303d;
   --sage: #667d5f;
   --ink: #3a2d2d;
@@ -68,15 +68,15 @@ button, input, select, textarea {
   position: relative;
   z-index: 1;
   width: min(1360px, 76vw);
-  margin: clamp(12px, 2vh, 24px) auto;
-  padding: 14px 22px 14px;
+  margin: clamp(0px, 1vh, 8px) auto;
+  padding: 22px 22px 14px;
   border: 1px solid rgba(91, 68, 71, 0.15);
   background: rgba(255, 250, 246, 0.18);
 }
 
 .masthead {
   text-align: center;
-  padding-top: 10px;
+  padding-top: 0;
 }
 
 .eyebrow {
@@ -89,7 +89,7 @@ button, input, select, textarea {
 
 h1 {
   margin: 0;
-  font-size: clamp(2.2rem, 3vw, 4rem);
+  font-size: clamp(1.6rem, 2vw, 2.8rem);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -136,6 +136,7 @@ h1 {
   min-width: 220px;
   text-align: center;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--rose-dark);
 }
 
@@ -294,6 +295,7 @@ h1 {
 
 .editor {
   position: fixed;
+  color: var(--muted);
   right: 18px;
   top: 50%;
   transform: translateY(-50%);
@@ -654,7 +656,7 @@ h1 {
   padding: 0 8px;
   color: var(--gold);
   background: var(--paper);
-  content: "âœ¦";
+  content: "✦";
   font-size: 0.9rem;
   line-height: 1;
   transform: translateX(-50%);
@@ -692,12 +694,12 @@ h1 {
 
 .footer-quote::before {
   margin-bottom: 8px;
-  content: "âœ¦  â§  âœ¦";
+  content: "✦  ❧  ✦";
 }
 
 .footer-quote::after {
   margin-top: 10px;
-  content: "â§  âœ¦  â§";
+  content: "❧  ✦  ❧";
 }
 
 .status:empty {
@@ -767,15 +769,15 @@ h1 {
   .planner-shell {
     display: grid;
     grid-template-rows: auto auto auto auto;
-    align-content: center;
-    gap: clamp(6px, 1.2vh, 12px);
+    align-content: start;
+    gap: clamp(2px, 0.6vh, 6px);
     width: min(85vw, 1680px);
     max-width: 1680px;
     height: 100vh;
     height: 100dvh;
     min-height: 0;
     margin: 0 0 0 max(10.5vw, calc((100vw - 1680px) / 2));
-    padding: clamp(8px, 1.2vh, 14px) clamp(12px, 1vw, 24px);
+    padding: 0 clamp(12px, 1vw, 24px);
     overflow: hidden;
     border: 0;
     background: transparent;
@@ -813,7 +815,7 @@ h1 {
   .planner-shell h1 {
     color: #512631;
     font-family: "Edwardian Script ITC", "French Script MT", "Monotype Corsiva", "Segoe Script", cursive;
-    font-size: clamp(4.8rem, 8vw, 7rem);
+    font-size: clamp(3rem, 5vw, 4.2rem);
     font-style: normal;
     font-weight: 400;
     letter-spacing: 0;
@@ -863,18 +865,18 @@ h1 {
   }
 
   .planner-shell .day-card {
-    height: clamp(218px, 38vh, 350px);
+    height: clamp(320px, 56vh, 520px);
     min-height: 0;
-    padding: clamp(12px, 1.2vw, 18px) clamp(10px, 0.9vw, 15px) 14px;
+    padding: clamp(12px, 1.2vw, 18px) clamp(10px, 0.9vw, 15px) 18px;
     color: #302328;
-    background: rgba(255, 250, 245, 0.95);
+    background: rgba(243, 234, 216, 0.95);
     box-shadow:
       inset 0 0 0 3px rgba(255, 255, 255, 0.82),
       0 8px 18px rgba(58, 39, 30, 0.16);
   }
 
   .planner-shell .day-head {
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
 
   .planner-shell .day-body {
@@ -1114,7 +1116,7 @@ h1 {
   }
 
   .planner-shell .footer {
-    margin-top: clamp(24px, 4vh, 48px);
+    margin-top: clamp(12px, 2vh, 22px);
   }
 
   @media (max-width: 1100px) {
@@ -1176,22 +1178,22 @@ h1 {
 }
 
 .week-grid {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
   gap: clamp(10px, 1.2vw, 20px);
 }
 
 .day-card {
   position: relative;
   min-height: 0;
-  padding: 20px;
+  padding: 18px;
   gap: 16px;
-  aspect-ratio: 1 / 1.618;
+  aspect-ratio: 1 / 2;
   border: 1.5px solid transparent;
   border-radius: var(--card-arch) var(--card-arch) 28px 28px;
   background:
-    linear-gradient(180deg, #fffaf0 0%, #fbefd5 55%, #f3dcaa 100%) padding-box,
-    linear-gradient(135deg, #c9a24a, #e8d29a, #b8892f) border-box;
-  box-shadow: 0 10px 30px rgba(90, 40, 40, 0.12);
+    linear-gradient(180deg, #fbf6ee 0%, #f3e9d6 55%, #eadcc4 100%) padding-box,
+    linear-gradient(135deg, #bfa06a, #d8c89a, #a88840) border-box;
+  box-shadow: 0 10px 30px rgba(85, 65, 45, 0.12);
   overflow: hidden;
 }
 
@@ -1203,9 +1205,9 @@ h1 {
 .day-card.today {
   border-color: transparent;
   background:
-    linear-gradient(180deg, #fffaf0 0%, #fbefd5 55%, #f3dcaa 100%) padding-box,
-    linear-gradient(135deg, #9f711f, #e1bf64, #8f6119) border-box;
-  box-shadow: 0 10px 30px rgba(90, 40, 40, 0.12), 0 0 0 1px rgba(159, 113, 31, 0.2);
+    linear-gradient(180deg, #fbf6ee 0%, #f3e9d6 55%, #eadcc4 100%) padding-box,
+    linear-gradient(135deg, #8f6a1f, #d4b65a, #7f5a15) border-box;
+  box-shadow: 0 10px 30px rgba(85, 65, 45, 0.12), 0 0 0 1px rgba(159, 113, 31, 0.16);
 }
 
 .day-card:focus-visible,
@@ -1364,7 +1366,7 @@ h1 {
   margin-top: auto;
   padding: 8px 0 0;
   border: 0;
-  border-top: 1px solid rgba(137, 99, 36, 0.48);
+  border-top: 1px solid rgba(74, 111, 160, 0.48);
   border-radius: 0;
   background: transparent;
 }
@@ -1377,16 +1379,15 @@ h1 {
 
 .focus-text {
   display: block;
-  overflow: visible;
-  color: #493139;
+  overflow: hidden;
+  color: var(--muted);
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-style: italic;
-  line-height: 1.3;
+  line-height: 1.1;
   -webkit-line-clamp: unset;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  padding-bottom: 2px;
 }
 
 .footer {
@@ -1396,7 +1397,7 @@ h1 {
 
 .footer-quote {
   color: #4b2632;
-  text-shadow: 0 1px 0 rgba(255, 250, 244, 0.85), 0 0 12px rgba(255, 248, 240, 0.95);
+  text-shadow: 0 0 12px rgba(255, 248, 240, 0.95);
 }
 
 .status {
@@ -1414,7 +1415,7 @@ h1 {
     height: calc(100vh - 96px);
     height: calc(100dvh - 96px);
     min-height: 0;
-    margin: 12px auto;
+    margin: 48px auto;
     padding: 0;
     overflow: visible;
     border: 0;
@@ -1439,7 +1440,7 @@ h1 {
   }
 
   .planner-shell h1 {
-    font-size: clamp(4.8rem, 8vw, 7rem);
+    font-size: clamp(3rem, 5vw, 4.2rem);
   }
 
   .planner-shell .toolbar {
@@ -1457,35 +1458,35 @@ h1 {
   .planner-shell .week-grid {
     width: 100%;
     min-height: 0;
-    margin: 12px 0 24px;
+    margin: 0 0 24px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     align-items: center;
-    gap: clamp(6px, 0.8vw, 12px);
+    gap: clamp(10px, 1.2vw, 20px);
   }
 
   .planner-shell .day-card {
     width: 100%;
     height: auto;
-    max-height: calc(100dvh - 240px);
+    max-height: calc(100dvh - 220px);
     min-height: 0;
-    padding: 20px;
+    padding: 18px;
     gap: 16px;
     color: #493139;
     border: 1.5px solid transparent;
     border-radius: var(--card-arch) var(--card-arch) 28px 28px;
     background:
-      linear-gradient(180deg, #fffaf0 0%, #fbefd5 55%, #f3dcaa 100%) padding-box,
-      linear-gradient(135deg, #c9a24a, #e8d29a, #b8892f) border-box;
-    box-shadow: 0 10px 30px rgba(90, 40, 40, 0.12);
+      linear-gradient(180deg, #fbf6ee 0%, #f3e9d6 55%, #eadcc4 100%) padding-box,
+      linear-gradient(135deg, #bfa06a, #d8c89a, #a88840) border-box;
+    box-shadow: 0 10px 30px rgba(85, 65, 45, 0.12);
     overflow: hidden;
   }
 
   .planner-shell .day-card.today {
     border-color: transparent;
     background:
-      linear-gradient(180deg, #fffaf0 0%, #fbefd5 55%, #f3dcaa 100%) padding-box,
-      linear-gradient(135deg, #9f711f, #e1bf64, #8f6119) border-box;
-    box-shadow: 0 10px 30px rgba(90, 40, 40, 0.12), 0 0 0 1px rgba(159, 113, 31, 0.2);
+      linear-gradient(180deg, #fbf6ee 0%, #f3e9d6 55%, #eadcc4 100%) padding-box,
+      linear-gradient(135deg, #8f6a1f, #d4b65a, #7f5a15) border-box;
+    box-shadow: 0 10px 30px rgba(85, 65, 45, 0.12), 0 0 0 1px rgba(159, 113, 31, 0.16);
   }
 
   .planner-shell .day-head {
@@ -1530,7 +1531,7 @@ h1 {
   .planner-shell .focus-box {
     margin-top: auto;
     padding: 8px 0 0;
-    border-top: 1px solid rgba(137, 99, 36, 0.48);
+    border-top: 1px solid rgba(74, 111, 160, 0.48);
     background: transparent;
     border-radius: 0;
   }
@@ -1549,7 +1550,7 @@ h1 {
     font-style: normal;
     font-weight: 500;
     line-height: 1.2;
-    text-shadow: 0 1px 0 rgba(255, 250, 244, 0.85), 0 0 12px rgba(255, 248, 240, 0.95);
+    text-shadow: 0 0 12px rgba(255, 248, 240, 0.95);
   }
 
   .planner-shell .footer-quote::before,
@@ -1634,14 +1635,13 @@ body.editor-open {
 .editor-header {
   flex: 0 0 auto;
   align-items: center;
-  padding-bottom: 8px;
 }
 
 .editor-day-picker {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .day-nav-button {
@@ -1685,8 +1685,8 @@ body.editor-open {
 }
 
 .selected-date {
-  margin-top: 6px;
-  color: #493139;
+  margin-top: 2px;
+  color: var(--muted);
   font-size: 1rem;
   font-weight: 600;
 }
@@ -1701,7 +1701,7 @@ body.editor-open {
 }
 
 .editor-content section {
-  padding-top: 12px;
+  padding-top: 1px;
 }
 
 .editor-footer {
@@ -1998,17 +1998,13 @@ body.editor-open {
   }
   
 }
-/* ==========================================================================
-   Default-plan feature UI (minimal additions to original theme)
-   ========================================================================== */
-
 /* Editor tabs */
 .editor-tabs {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 .editor-tab {
   border: none;
@@ -2021,7 +2017,7 @@ body.editor-open {
   opacity: 0.7;
 }
 .editor-tab[aria-selected="true"] {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0,0,0,0.08);
   opacity: 1;
   font-weight: 600;
 }
@@ -2033,20 +2029,20 @@ body.editor-open {
 /* Weekday chips */
 .weekday-chips {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   margin-bottom: 0.75rem;
 }
 .chip {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0,0,0,0.15);
   background: transparent;
   cursor: pointer;
   font: inherit;
 }
 .chip--active {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(0,0,0,0.12);
   font-weight: 700;
 }
 
@@ -2056,7 +2052,7 @@ body.editor-open {
   height: 1.4rem;
   border-radius: 999px;
   border: none;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0,0,0,0.2);
   position: relative;
   cursor: pointer;
   padding: 0;
@@ -2073,7 +2069,7 @@ body.editor-open {
   transition: transform 0.15s ease;
 }
 .switch--on {
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.45);
 }
 .switch--on::after {
   transform: translateX(1.2rem);
@@ -2083,22 +2079,15 @@ body.editor-open {
   outline-offset: 2px;
 }
 
-/* Day-mode row */
 .day-mode {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin: 0.5rem 0 0.75rem;
+  margin-bottom: 0.5rem;
 }
-.day-mode-label {
-  font-weight: 600;
-}
-.field-hint {
-  font-size: 0.85rem;
-  opacity: 0.8;
-  margin: 0.35rem 0 0.75rem;
-}
+.day-mode-label { font-weight: 600; }
+.field-hint { font-size: 0.85rem; opacity: 0.8; margin: 0.25rem 0 0.5rem; }
 
 /* Muted default items on cards */
 .event-item--default {
@@ -2106,178 +2095,196 @@ body.editor-open {
   font-style: italic;
 }
 .event-item--default::before {
-  content: 'Ã¢â€”Â¦';
+  content: '◦';
   margin-right: 0.35rem;
   font-style: normal;
 }
-/* ==========================================================================
-   Flower animation (only transform, base/stem origin, behind cards)
-   ========================================================================== */
-
-/* Shared keyframes: lean toward/away from centre */
-@keyframes flower-lean-left {
-  0%   { transform: rotate(calc(var(--flower-rot) * -1)) translate(0px, 0px) scale(1); }
-  100% { transform: rotate(var(--flower-rot)) translate(var(--flower-tx), var(--flower-ty)) scale(var(--flower-scale)); }
+/* Editor breathing room */
+.editor-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
 }
-@keyframes flower-lean-right {
-  0%   { transform: rotate(var(--flower-rot)) translate(0px, 0px) scale(1); }
-  100% { transform: rotate(calc(var(--flower-rot) * -1)) translate(calc(var(--flower-tx) * -1), var(--flower-ty)) scale(var(--flower-scale)); }
+.editor-content > section {
+  margin: 0;
+  padding: 0.25rem 0;
 }
-
-/* Left-side flowers: lean toward centre */
-.botanical--left {
-  --flower-rot: 3deg;
-  --flower-tx: 8px;
-  --flower-ty: -6px;
-  --flower-scale: 1.03;
-  transform-origin: bottom center;
-  animation: flower-lean-left 8s ease-in-out -2s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+.editor-tabs {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
 }
-.botanical--corner-top-left {
-  --flower-rot: 2deg;
-  --flower-tx: 4px;
-  --flower-ty: -4px;
-  --flower-scale: 1.02;
-  transform-origin: bottom center;
-  animation: flower-lean-left 11s ease-in-out -1s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+.weekday-chips {
+  margin-bottom: 1rem;
 }
-.botanical--rose {
-  --flower-rot: 4deg;
-  --flower-tx: 10px;
-  --flower-ty: -8px;
-  --flower-scale: 1.03;
-  transform-origin: bottom center;
-  animation: flower-lean-left 13s ease-in-out -5s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+.event-list {
+  margin: 0.5rem 0 0.75rem;
 }
-
-/* Right-side flowers: opposite phase, lean away from centre */
-.botanical--right {
-  --flower-rot: 3deg;
-  --flower-tx: 8px;
-  --flower-ty: -6px;
-  --flower-scale: 1.03;
-  transform-origin: bottom center;
-  animation: flower-lean-right 9.5s ease-in-out -4s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+.form-grid {
+  gap: 0.85rem;
 }
-.botanical--corner-top-right {
-  --flower-rot: 2deg;
-  --flower-tx: 4px;
-  --flower-ty: -4px;
-  --flower-scale: 1.02;
-  transform-origin: bottom center;
-  animation: flower-lean-right 12s ease-in-out -3s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+.field {
+  margin-bottom: 0.35rem;
 }
-.botanical--berry {
-  --flower-rot: 4deg;
-  --flower-tx: 10px;
-  --flower-ty: -8px;
-  --flower-scale: 1.03;
-  transform-origin: bottom center;
-  animation: flower-lean-right 14s ease-in-out -2.5s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+.day-mode {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
 }
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .botanical--left,
-  .botanical--right,
-  .botanical--corner-top-left,
-  .botanical--corner-top-right,
-  .botanical--rose,
-  .botanical--berry {
-    animation: none;
-    will-change: auto;
+.field-hint {
+  margin: 0.35rem 0 0.75rem;
+}
+/* Shrink title/header and tighten top spacing */
+.planner-shell .masthead {
+  padding-top: 0;
+  margin-bottom: 0;
+}
+.planner-shell h1 {
+  font-size: clamp(2rem, 3.2vw, 2.8rem);
+  line-height: 1.05;
+}
+.planner-shell .toolbar {
+  margin: 8px 0 12px;
+}
+.planner-shell .week-grid {
+  margin-top: 0;
+}
+/* Cards slightly taller, growing upward; header tighter; pill more incognito */
+.planner-shell .masthead {
+  padding-top: 0;
+  margin-bottom: 0;
+}
+.planner-shell h1 {
+  font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+  line-height: 1.05;
+}
+.planner-shell .toolbar {
+  margin: 4px 0 8px;
+  background: rgba(255, 248, 240, 0.45);
+  border-color: rgba(151, 83, 91, 0.25);
+  padding: 2px 10px;
+  backdrop-filter: blur(2px);
+}
+.planner-shell .week-grid {
+  margin-top: -1rem;
+}
+.planner-shell .day-card {
+  min-height: 360px;
+  max-height: calc(100dvh - 180px);
+}
+.planner-shell .day-body {
+  min-height: 230px;
+}
+/* Cards: moderate height, subtle upward shift; title nearly original size */
+.planner-shell h1 {
+  font-size: clamp(2.8rem, 4.5vw, 4rem);
+  line-height: 1.05;
+}
+.planner-shell .masthead {
+  padding-top: 0;
+  margin-bottom: 0;
+}
+.planner-shell .toolbar {
+  margin: 6px 0 10px;
+}
+.planner-shell .week-grid {
+  margin-top: -0.5rem;
+}
+.planner-shell .day-card {
+  min-height: 300px;
+  max-height: calc(100dvh - 220px);
+}
+.planner-shell .day-body {
+  min-height: 180px;
+}
+/* Title original size, minimal top spacing */
+.planner-shell .masthead {
+  padding-top: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.planner-shell h1 {
+  font-size: clamp(3rem, 5vw, 4.2rem);
+  line-height: 1.05;
+}
+/* Ensure focus box visible: card grows to fit content */
+.planner-shell .day-card {
+  height: auto;
+  min-height: 330px;
+  overflow: visible;
+}
+.planner-shell .day-body {
+  min-height: 150px;
+  overflow: visible;
+}
+.planner-shell .focus-box {
+  position: relative;
+  z-index: 2;
+}
+/* Less space above title; more space above day cards */
+.planner-shell .masthead {
+  margin-top: 0;
+  padding-top: 0;
+}
+.planner-shell h1 {
+  margin-top: 0;
+}
+.planner-shell .toolbar {
+  margin-top: 4px;
+}
+.planner-shell .week-grid {
+  margin-top: 1.25rem;
+}
+/* Day cards slightly smaller; title larger; quote smaller and swirly */
+.planner-shell .day-card {
+  min-height: 280px;
+  max-height: calc(100dvh - 240px);
+}
+.planner-shell .day-body {
+  min-height: 150px;
+}
+.planner-shell h1 {
+  font-size: clamp(3rem, 5vw, 4.2rem);
+}
+.planner-shell .footer-quote {
+  font-family: "Edwardian Script ITC", "French Script MT", "Monotype Corsiva", "Segoe Script", cursive;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  font-style: italic;
+}
+/* Title larger, minimal top spacing, override media queries */
+.planner-shell .masthead {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.planner-shell h1 {
+  font-size: clamp(4rem, 6vw, 5.5rem) !important;
+  line-height: 1.02 !important;
+  margin: 0 !important;
+}
+@media (max-height: 800px) {
+  .planner-shell h1 {
+    font-size: clamp(4.2rem, 7vw, 5.8rem) !important;
   }
 }
-/* Ensure every botanical flower can move */
-.botanical--bottom {
-  --flower-rot: 2deg;
-  --flower-tx: 6px;
-  --flower-ty: -5px;
-  --flower-scale: 1.02;
-  transform-origin: bottom center;
-  animation: flower-lean-left 10s ease-in-out -6s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+/* Restore original footer quote styling */
+.planner-shell .footer-quote {
+  font-family: inherit;
+  font-size: clamp(1.9rem, 3vw, 2.8rem);
+  font-style: normal;
 }
-.botanical--bell {
-  --flower-rot: 3deg;
-  --flower-tx: 7px;
-  --flower-ty: -5px;
-  --flower-scale: 1.02;
-  transform-origin: bottom center;
-  animation: flower-lean-left 10.5s ease-in-out -7s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+/* Restore footer quote to original look */
+.planner-shell .footer-quote {
+  font-family: "Monotype Corsiva", "French Script MT", "Segoe Script", cursive;
+  font-size: clamp(2rem, 3.5vw, 3.3rem);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.2;
 }
-.botanical--orchid {
-  --flower-rot: 3deg;
-  --flower-tx: 7px;
-  --flower-ty: -5px;
-  --flower-scale: 1.02;
-  transform-origin: bottom center;
-  animation: flower-lean-right 10.5s ease-in-out -8s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+/* Reduce top spacing to ~2cm */
+.planner-shell {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
-.botanical--pansy {
-  --flower-rot: 2.5deg;
-  --flower-tx: 5px;
-  --flower-ty: -4px;
-  --flower-scale: 1.02;
-  transform-origin: bottom center;
-  animation: flower-lean-left 9s ease-in-out -3.5s infinite alternate;
-  will-change: transform;
-  z-index: 0;
+.planner-shell .masthead {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
-.botanical--corner-bottom-left {
-  --flower-rot: 2deg;
-  --flower-tx: 4px;
-  --flower-ty: -3px;
-  --flower-scale: 1.015;
-  transform-origin: bottom center;
-  animation: flower-lean-left 11.5s ease-in-out -4.5s infinite alternate;
-  will-change: transform;
-  z-index: 0;
-}
-.botanical--corner-bottom-right {
-  --flower-rot: 2deg;
-  --flower-tx: 4px;
-  --flower-ty: -3px;
-  --flower-scale: 1.015;
-  transform-origin: bottom center;
-  animation: flower-lean-right 11.5s ease-in-out -5.5s infinite alternate;
-  will-change: transform;
-  z-index: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .botanical--bottom,
-  .botanical--bell,
-  .botanical--orchid,
-  .botanical--pansy,
-  .botanical--corner-bottom-left,
-  .botanical--corner-bottom-right {
-    animation: none;
-    will-change: auto;
-  }
-}
-
-
-
-
-
-
-
-
