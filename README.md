@@ -68,6 +68,8 @@ This project was developed as a practical experiment in vibe coding: describe a 
 
 The central design question was whether a visually pleasing, expressive planner could encourage more consistent planning for everyday life and studies. The floral collage, vintage typography, spacious cards, and subtle motion are part of that motivation experiment, while the saved schedule and shared selected week make the planner useful day to day.
 
+I used Claude and ChatGPT for discussing design choices and writing the PRD, and Copilot for implementation. 
+
 ## Possible future features
 
 - Toggle on and off weekend days while maintaining a sleek layout
